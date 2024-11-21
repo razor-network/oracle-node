@@ -23,6 +23,7 @@ func TestUpdateCollection(t *testing.T) {
 	var collectionId uint16
 
 	type args struct {
+		txnOptsErr           error
 		updateCollectionTxn  *Types.Transaction
 		updateCollectionErr  error
 		waitIfCommitStateErr error
@@ -68,13 +69,21 @@ func TestUpdateCollection(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("waitIfCommitState error"),
 		},
+		{
+			name: "Test 4: When there is an error in getting txnOpts",
+			args: args{
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(jobIdUint16)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			cmdUtilsMock.On("WaitIfCommitState", mock.Anything, mock.Anything).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
 			assetManagerMock.On("UpdateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)

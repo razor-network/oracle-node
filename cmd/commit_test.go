@@ -28,11 +28,12 @@ func TestCommit(t *testing.T) {
 	)
 
 	type args struct {
-		state     int64
-		stateErr  error
-		commitTxn *Types.Transaction
-		commitErr error
-		hash      common.Hash
+		state      int64
+		stateErr   error
+		txnOptsErr error
+		commitTxn  *Types.Transaction
+		commitErr  error
+		hash       common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -75,13 +76,22 @@ func TestCommit(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("commit error"),
 		},
+		{
+			name: "Test 4: When there is an error in getting txnOpts",
+			args: args{
+				state:      0,
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			voteManagerMock.On("Commit", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.commitTxn, tt.args.commitErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 

@@ -4,12 +4,13 @@ import (
 	"crypto/ecdsa"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -34,6 +35,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 		epoch                    uint32
 		epochErr                 error
 		time                     string
+		txnOptsErr               error
 		withdrawHash             common.Hash
 		withdrawErr              error
 	}
@@ -173,6 +175,19 @@ func TestHandleUnstakeLock(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: nil,
 		},
+		{
+			name: "Test 11: When there is an error in getting txnOpts",
+			args: args{
+				lock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				withdrawReleasePeriod: 4,
+				epoch:                 5,
+				txnOptsErr:            errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -182,7 +197,7 @@ func TestHandleUnstakeLock(t *testing.T) {
 			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.lock, tt.args.lockErr)
 			utilsMock.On("GetWithdrawInitiationPeriod", mock.Anything, mock.Anything).Return(tt.args.withdrawReleasePeriod, tt.args.withdrawReleasePeriodErr)
 			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			cmdUtilsMock.On("InitiateWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 

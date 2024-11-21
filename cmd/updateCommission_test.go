@@ -33,6 +33,7 @@ func TestUpdateCommission(t *testing.T) {
 		epoch                            uint32
 		epochErr                         error
 		time                             string
+		txnOptsErr                       error
 		UpdateCommissionTxn              *Types.Transaction
 		UpdateCommissionErr              error
 		hash                             common.Hash
@@ -184,13 +185,25 @@ func TestUpdateCommission(t *testing.T) {
 			},
 			wantErr: errors.New("invalid epoch for update"),
 		},
+		{
+			name: "Test 11: When there is an error in getting txnOpts",
+			args: args{
+				commission:                    10,
+				stakerInfo:                    bindings.StructsStaker{},
+				maxCommission:                 20,
+				epochLimitForUpdateCommission: 10,
+				epoch:                         11,
+				txnOptsErr:                    errors.New("txnOpts error"),
+			},
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)

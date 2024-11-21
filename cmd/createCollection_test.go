@@ -23,6 +23,7 @@ func TestCreateCollection(t *testing.T) {
 	type args struct {
 		jobIdUint8                 []uint16
 		waitForAppropriateStateErr error
+		txnOptsErr                 error
 		createCollectionTxn        *Types.Transaction
 		createCollectionErr        error
 		hash                       common.Hash
@@ -65,13 +66,22 @@ func TestCreateCollection(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("createCollection error"),
 		},
+		{
+			name: "Test 4: When there is an error in getting txnOpts",
+			args: args{
+				jobIdUint8: []uint16{1, 2},
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(tt.args.jobIdUint8)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
 			assetManagerMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)

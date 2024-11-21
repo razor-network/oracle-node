@@ -22,6 +22,7 @@ func TestUpdateJob(t *testing.T) {
 	var jobId uint16
 
 	type args struct {
+		txnOptsErr           error
 		updateJobTxn         *Types.Transaction
 		updateJobErr         error
 		waitIfCommitStateErr error
@@ -62,12 +63,20 @@ func TestUpdateJob(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("waitIfCommitState error"),
 		},
+		{
+			name: "Test 4:  When there is an error in getting txnOpts",
+			args: args{
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			cmdUtilsMock.On("WaitIfCommitState", mock.Anything, mock.Anything, mock.Anything).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
 			assetManagerMock.On("UpdateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateJobTxn, tt.args.updateJobErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)

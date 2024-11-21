@@ -70,6 +70,7 @@ func TestPropose(t *testing.T) {
 		fileNameErr                error
 		saveDataErr                error
 		mediansBigInt              []*big.Int
+		txnOptsErr                 error
 		proposeTxn                 *Types.Transaction
 		proposeErr                 error
 		hash                       common.Hash
@@ -476,6 +477,26 @@ func TestPropose(t *testing.T) {
 			},
 			wantErr: errors.New("smallestStakerId error"),
 		},
+		{
+			name: "Test 19: When there is an error in getting txnOpts",
+			args: args{
+				state:                   2,
+				staker:                  bindings.StructsStaker{},
+				numStakers:              5,
+				biggestStake:            big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:         2,
+				salt:                    saltBytes32,
+				iteration:               1,
+				numOfProposedBlocks:     3,
+				sortedProposedBlockIds:  []uint32{2, 1, 0},
+				maxAltBlocks:            4,
+				lastIteration:           big.NewInt(5),
+				lastProposedBlockStruct: bindings.StructsBlock{},
+				medians:                 []*big.Int{big.NewInt(6701548), big.NewInt(478307)},
+				txnOptsErr:              errors.New("txnOpts error"),
+			},
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		SetUpMockInterfaces()
@@ -497,7 +518,7 @@ func TestPropose(t *testing.T) {
 		utilsMock.On("ConvertUint32ArrayToBigIntArray", mock.Anything).Return(tt.args.mediansBigInt)
 		pathMock.On("GetProposeDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 		fileUtilsMock.On("SaveDataToProposeJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveDataErr)
-		utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+		utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 		blockManagerMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxn, tt.args.proposeErr)
 		transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 

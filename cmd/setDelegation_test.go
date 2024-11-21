@@ -28,6 +28,7 @@ func TestSetDelegation(t *testing.T) {
 		status                     bool
 		staker                     bindings.StructsStaker
 		stakerErr                  error
+		txnOptsErr                 error
 		setDelegationAcceptanceTxn *Types.Transaction
 		setDelegationAcceptanceErr error
 		hash                       common.Hash
@@ -126,6 +127,17 @@ func TestSetDelegation(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("error in updating commission"),
 		},
+		{
+			name: "Test 7: When there is an error in getting txnOpts",
+			args: args{
+				staker: bindings.StructsStaker{
+					AcceptDelegation: true,
+				},
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -134,7 +146,7 @@ func TestSetDelegation(t *testing.T) {
 
 			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
 			cmdUtilsMock.On("UpdateCommission", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.UpdateCommissionErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			stakeManagerMock.On("SetDelegationAcceptance", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("bool")).Return(tt.args.setDelegationAcceptanceTxn, tt.args.setDelegationAcceptanceErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 

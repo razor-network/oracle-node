@@ -22,6 +22,7 @@ func TestTransfer(t *testing.T) {
 	type args struct {
 		amount        *big.Int
 		decimalAmount *big.Float
+		txnOptsErr    error
 		transferTxn   *Types.Transaction
 		transferErr   error
 		transferHash  common.Hash
@@ -56,13 +57,23 @@ func TestTransfer(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("transfer error"),
 		},
+		{
+			name: "When there is an error in getting txnOpts",
+			args: args{
+				amount:        big.NewInt(1).Mul(big.NewInt(1000), big.NewInt(1e18)),
+				decimalAmount: big.NewFloat(1000),
+				txnOptsErr:    errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("CheckAmountAndBalance", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("*big.Int")).Return(tt.args.amount)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			utilsMock.On("GetAmountInDecimal", mock.AnythingOfType("*big.Int")).Return(tt.args.decimalAmount)
 			tokenManagerMock.On("Transfer", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("common.Address"), mock.AnythingOfType("*big.Int")).Return(tt.args.transferTxn, tt.args.transferErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.transferHash)

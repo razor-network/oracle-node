@@ -20,6 +20,7 @@ func TestExtendLock(t *testing.T) {
 	var config types.Configurations
 
 	type args struct {
+		txnOptsErr   error
 		resetLockTxn *Types.Transaction
 		resetLockErr error
 		hash         common.Hash
@@ -50,12 +51,20 @@ func TestExtendLock(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("resetLock error"),
 		},
+		{
+			name: "Test 3: When there is an error in getting txnOpts",
+			args: args{
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			stakeManagerMock.On("ResetUnstakeLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.resetLockTxn, tt.args.resetLockErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 

@@ -64,6 +64,10 @@ func (*UtilsStruct) Reveal(rpcParameters rpc.RPCParameters, config types.Configu
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
 		Account:         account,
 	})
+	if err != nil {
+		log.Error(err)
+		return core.NilHash, err
+	}
 
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

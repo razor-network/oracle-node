@@ -127,6 +127,7 @@ func TestHandleWithdrawLock(t *testing.T) {
 		withdrawLockErr   error
 		epoch             uint32
 		epochErr          error
+		txnOptsErr        error
 		unlockWithdraw    common.Hash
 		unlockWithdrawErr error
 		time              string
@@ -191,6 +192,18 @@ func TestHandleWithdrawLock(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: false,
 		},
+		{
+			name: "Test 6: When there is an error in getting txnOpts",
+			args: args{
+				withdrawLock: types.Locks{
+					UnlockAfter: big.NewInt(4),
+				},
+				epoch:      5,
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -198,7 +211,7 @@ func TestHandleWithdrawLock(t *testing.T) {
 
 			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawLock, tt.args.withdrawLockErr)
 			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			cmdUtilsMock.On("UnlockWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unlockWithdraw, tt.args.unlockWithdrawErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			ut := &UtilsStruct{}
