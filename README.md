@@ -190,6 +190,23 @@ Password:
 
 _Before staking on Razor Network, please ensure your account has sFUEL and RAZOR. For testnet RAZOR, please contact us on Discord._
 
+### Import Endpoints
+
+You can import the endpoints mentioned in `endpoints.json` from the repository to your `$HOME/.razor/endpoints.json` file using the `importEndpoints` command.
+This multiple providers along with the user input provider are sorted according to the best performance and the best provider is chosen by the RPC manager which will be used to make the RPC calls.
+
+razor cli
+
+```
+$ ./razor importEndpoints
+```
+
+docker
+
+```
+docker exec -it razor-go razor importEndpoints
+```
+
 ### Stake
 
 If you have a minimum of 1000 razors in your account, you can stake those using the addStake command.

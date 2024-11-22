@@ -463,6 +463,11 @@ func (_m *UtilsCmdInterface) ExecuteImport(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
 }
 
+// ExecuteImportEndpoints provides a mock function with given fields:
+func (_m *UtilsCmdInterface) ExecuteImportEndpoints() {
+	_m.Called()
+}
+
 // ExecuteInitiateWithdraw provides a mock function with given fields: flagSet
 func (_m *UtilsCmdInterface) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 	_m.Called(flagSet)
