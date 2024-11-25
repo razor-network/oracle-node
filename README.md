@@ -118,7 +118,7 @@ $ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value>
 docker
 
 ```
-docker exec -it razor-go razor setConfig --provider <rpc_provider> --alternateProvider <alternate_rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout> --httpTimeout <http_timeout> --logFileMaxSize <file_max_size> --logFileMaxBackups <file_max_backups> --logFileMaxAge <file_max_age>
+docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout> --httpTimeout <http_timeout> --logFileMaxSize <file_max_size> --logFileMaxBackups <file_max_backups> --logFileMaxAge <file_max_age>
 ```
 
 Example:

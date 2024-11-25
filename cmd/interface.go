@@ -140,7 +140,6 @@ type FlagSetInterface interface {
 type UtilsCmdInterface interface {
 	SetConfig(flagSet *pflag.FlagSet) error
 	GetProvider() (string, error)
-	GetAlternateProvider() (string, error)
 	GetMultiplier() (float32, error)
 	GetWaitTime() (int32, error)
 	GetGasPrice() (int32, error)

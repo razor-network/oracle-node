@@ -11,8 +11,6 @@ then
   PROVIDER="http://127.0.0.1:8545"
 fi
 
-read -rp "Alternate Provider: " ALTERNATE_PROVIDER
-
 read -rp "Gas Multiplier: (1.0) " GAS_MULTIPLIER
 if [ -z "$GAS_MULTIPLIER" ];
 then
@@ -55,9 +53,4 @@ if [ -z "$MAX_AGE" ]; then
    MAX_AGE=60
 fi
 
-ALT_PROVIDER_OPTION=""
-if [ -n "$ALTERNATE_PROVIDER" ]; then
-    ALT_PROVIDER_OPTION="--alternateProvider $ALTERNATE_PROVIDER"
-fi
-
-$RAZOR setConfig -p $PROVIDER $ALT_PROVIDER_OPTION -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 5 --httpTimeout 5 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
+$RAZOR setConfig -p $PROVIDER -b $BUFFER -g $GAS_MULTIPLIER -w $WAIT_TIME --gasprice $GAS_PRICE --gasLimit $GAS_LIMIT --rpcTimeout 5 --httpTimeout 5 --logFileMaxSize $MAX_SIZE --logFileMaxBackups $MAX_BACKUPS --logFileMaxAge $MAX_AGE
