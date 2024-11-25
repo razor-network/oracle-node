@@ -70,7 +70,10 @@ const (
 )
 
 //BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
-const BlockNumberInterval = 5
+const (
+	BlockNumberInterval           = 5
+	StaleBlockNumberCheckInterval = 15
+)
 
 //APIKeyRegex will be used as a regular expression to be matched in job Urls
 const APIKeyRegex = `\$\{(.+?)\}`

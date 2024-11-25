@@ -2,13 +2,11 @@
 package cmd
 
 import (
-	"context"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
 	"razor/RPC"
-	"razor/logger"
 	"razor/utils"
 	"strconv"
 )
@@ -30,24 +28,12 @@ func initialiseStakerInfo(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the GetStakerInfo function
 func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteStakerinfo: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-	logger.SetLoggerParameters(client, "")
+	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
 	log.Debug("ExecuteStakerinfo: StakerId: ", stakerId)
-
-	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
-	utils.CheckError("Error in initializing RPC Manager: ", err)
-
-	rpcParameters := RPC.RPCParameters{
-		RPCManager: rpcManager,
-		Ctx:        context.Background(),
-	}
 
 	log.Debug("ExecuteStakerinfo: Calling GetStakerInfo() with argument stakerId = ", stakerId)
 	err = cmdUtils.GetStakerInfo(rpcParameters, stakerId)

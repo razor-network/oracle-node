@@ -29,10 +29,8 @@ func initialiseImport(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ImportAccount function
 func (*UtilsStruct) ExecuteImport(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
+	_, _, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 	log.Debug("Calling ImportAccount()...")
 	account, err := cmdUtils.ImportAccount()
 	utils.CheckError("Import error: ", err)

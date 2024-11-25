@@ -2,11 +2,9 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 	"razor/RPC"
-	"razor/logger"
 	"razor/utils"
 	"strconv"
 	"strings"
@@ -33,20 +31,8 @@ func initialiseCollectionList(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and and executes the GetCollectionList function
 func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteCollectionList: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-	logger.SetLoggerParameters(client, "")
-
-	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
-	utils.CheckError("Error in initializing RPC Manager: ", err)
-
-	rpcParameters := RPC.RPCParameters{
-		RPCManager: rpcManager,
-		Ctx:        context.Background(),
-	}
+	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("Calling GetCollectionList()")
 	err = cmdUtils.GetCollectionList(rpcParameters)

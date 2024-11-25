@@ -7,13 +7,20 @@ import (
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"os"
+	"razor/block"
+	"razor/core/types"
 	"razor/logger"
 	"razor/path"
 	"strings"
 )
 
-var log = logger.NewLogger()
+var log = logger.NewLogger("", &ethclient.Client{}, "", types.Configurations{}, &block.BlockMonitor{})
+
+func UpdateAccountsLogger(updatedLogger *logger.Logger) {
+	log = updatedLogger
+}
 
 //This function takes path and password as input and returns new account
 func (am *AccountManager) CreateAccount(keystorePath string, password string) accounts.Account {

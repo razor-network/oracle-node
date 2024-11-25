@@ -6,6 +6,7 @@ import (
 	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"razor/utils"
 	"strings"
 
@@ -97,7 +98,7 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config.LogFileMaxBackups = logFileMaxBackups
 	config.LogFileMaxAge = logFileMaxAge
 
-	setLogLevel(config)
+	setLogLevel(log, config)
 
 	return config, nil
 }
@@ -369,18 +370,22 @@ func (*UtilsStruct) GetLogFileMaxAge() (int, error) {
 	return logFileMaxAge.(int), nil
 }
 
-//This function sets the log level
-func setLogLevel(config types.Configurations) {
+// setLogLevel sets the log level for the provided logger instance.
+func setLogLevel(logger *logger.Logger, config types.Configurations) {
+	// Set the log level based on the configuration
 	if config.LogLevel == "debug" {
-		log.SetLevel(logrus.DebugLevel)
+		logger.SetLogLevel(logrus.DebugLevel)
+		logger.Debug("Log level set to DEBUG")
 	}
 
-	log.Debugf("Config details: %+v", config)
+	// Log configuration details if debug level is enabled
+	logger.Debugf("Config details: %+v", config)
 
+	// Log additional details if the log file flag is passed
 	if razorUtils.IsFlagPassed("logFile") {
-		log.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)
-		log.Debugf("Log File Max Backups (max number of old log files to retain): %d", config.LogFileMaxBackups)
-		log.Debugf("Log File Max Age (max number of days to retain old log files): %d", config.LogFileMaxAge)
+		logger.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)
+		logger.Debugf("Log File Max Backups (max number of old log files to retain): %d", config.LogFileMaxBackups)
+		logger.Debugf("Log File Max Age (max number of days to retain old log files): %d", config.LogFileMaxAge)
 	}
 }
 

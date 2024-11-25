@@ -321,7 +321,7 @@ type FileUtils interface {
 	ReadFromProposeJsonFile(filePath string) (types.ProposeFileData, error)
 	SaveDataToDisputeJsonFile(filePath string, bountyIdQueue []uint32) error
 	ReadFromDisputeJsonFile(filePath string) (types.DisputeFileData, error)
-	AssignLogFile(flagSet *pflag.FlagSet, configurations types.Configurations)
+	AssignLogFile(flagSet *pflag.FlagSet) (string, error)
 }
 
 type GasUtils interface {

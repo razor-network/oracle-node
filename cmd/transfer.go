@@ -2,12 +2,10 @@
 package cmd
 
 import (
-	"context"
 	"razor/RPC"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -34,19 +32,13 @@ func initialiseTransfer(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the Transfer function
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteTransfer: Config: %+v", config)
+	config, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
-	client := razorUtils.ConnectToClient(config.Provider)
+	log.Debugf("ExecuteTransfer: Config: %+v", config)
 
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
-
-	logger.SetLoggerParameters(client, fromAddress)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
@@ -61,14 +53,6 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
-
-	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
-	utils.CheckError("Error in initializing RPC Manager: ", err)
-
-	rpcParameters := RPC.RPCParameters{
-		RPCManager: rpcManager,
-		Ctx:        context.Background(),
-	}
 
 	balance, err := razorUtils.FetchBalance(rpcParameters, account.Address)
 	utils.CheckError("Error in fetching razor balance: ", err)

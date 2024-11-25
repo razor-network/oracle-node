@@ -26,11 +26,8 @@ func initialiseListAccounts(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the ListAccounts function
 func (*UtilsStruct) ExecuteListAccounts(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
+	_, _, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("ExecuteListAccounts: Calling ListAccounts()...")
 	allAccounts, err := cmdUtils.ListAccounts()
