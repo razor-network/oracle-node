@@ -189,7 +189,7 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 
 	// Initialize BlockMonitor with RPCManager
 	blockMonitor = block.NewBlockMonitor(client, rpcManager, core.BlockNumberInterval, core.StaleBlockNumberCheckInterval, func() {
-		log.Warn("Custom action on stale block detected.")
+		log.Warn("STALE BLOCK DETECTED! Attempting to move to next best RPC client...")
 	})
 	blockMonitor.Start()
 	log.Debug("Checking to assign log file...")

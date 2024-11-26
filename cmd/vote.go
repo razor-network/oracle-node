@@ -342,6 +342,13 @@ func (*UtilsStruct) HandleBlock(rpcParameters RPC.RPCParameters, account types.A
 					log.Error("Error in refreshing RPC endpoints: ", err)
 					break
 				}
+				bestEndpointURL, err := rpcParameters.RPCManager.GetBestEndpointURL()
+				if err != nil {
+					log.Error("Error in getting best RPC endpoint URL after refreshing: ", err)
+					break
+				}
+				log.Info("Current best RPC endpoint URL: ", bestEndpointURL)
+
 				lastRPCRefreshEpoch = epoch
 			}
 		}
