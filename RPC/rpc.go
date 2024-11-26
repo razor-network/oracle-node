@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
+	"razor/core"
 	"razor/path"
 	"sort"
 	"strings"
@@ -18,7 +19,7 @@ import (
 )
 
 func (m *RPCManager) calculateMetrics(endpoint *RPCEndpoint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), core.EndpointsContextTimeout*time.Second)
 	defer cancel()
 
 	client, err := ethclient.DialContext(ctx, endpoint.URL)
@@ -27,7 +28,7 @@ func (m *RPCManager) calculateMetrics(endpoint *RPCEndpoint) error {
 	}
 
 	start := time.Now()
-	blockNumber, err := client.BlockNumber(ctx)
+	blockNumber, err := m.fetchBlockNumberWithTimeout(ctx, client)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return fmt.Errorf("RPC call timed out: %w", err)
@@ -200,8 +201,8 @@ func (m *RPCManager) SwitchToNextBestRPCClient() error {
 		nextEndpoint := m.Endpoints[nextIndex]
 
 		// Check if we can connect to the next endpoint
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+		ctx, cancel := context.WithTimeout(context.Background(), core.EndpointsContextTimeout*time.Second)
+		cancel()
 
 		client, err := ethclient.DialContext(ctx, nextEndpoint.URL)
 		if err != nil {
@@ -209,7 +210,14 @@ func (m *RPCManager) SwitchToNextBestRPCClient() error {
 			continue
 		}
 
-		// Successfully connected, update the best client and endpoint
+		// Try fetching block number to validate the endpoint
+		_, err = m.fetchBlockNumberWithTimeout(ctx, client)
+		if err != nil {
+			logrus.Errorf("Failed to fetch block number for endpoint %s: %v", nextEndpoint.URL, err)
+			continue
+		}
+
+		// Successfully connected and validated, update the best client and endpoint
 		m.BestRPCClient = client
 		m.BestEndpoint = nextEndpoint
 
@@ -221,4 +229,15 @@ func (m *RPCManager) SwitchToNextBestRPCClient() error {
 	// If no valid endpoint is found, retain the current best client
 	logrus.Warn("No valid next-best RPC client found. Retaining the current best client.")
 	return nil
+}
+
+func (m *RPCManager) fetchBlockNumberWithTimeout(ctx context.Context, client *ethclient.Client) (uint64, error) {
+	blockNumber, err := client.BlockNumber(ctx)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return 0, fmt.Errorf("RPC call timed out: %w", err)
+		}
+		return 0, fmt.Errorf("RPC call failed: %w", err)
+	}
+	return blockNumber, nil
 }
