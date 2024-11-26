@@ -122,7 +122,7 @@ func TestExecuteClaimBounty(t *testing.T) {
 			SetUpMockInterfaces()
 			setupTestEndpointsEnvironment()
 
-			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything).Return("", nil)
+			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.password)
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
