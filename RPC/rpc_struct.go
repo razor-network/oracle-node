@@ -17,6 +17,7 @@ type RPCManager struct {
 	Endpoints     []*RPCEndpoint
 	mutex         sync.RWMutex
 	BestRPCClient *ethclient.Client // Holds the current best RPC client
+	BestEndpoint  *RPCEndpoint      // Holds the URL to current best RPC client
 }
 
 type RPCParameters struct {

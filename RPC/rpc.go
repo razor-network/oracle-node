@@ -6,17 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/log"
+	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
-	"razor/logger"
 	"razor/path"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 )
-
-var log = logger.NewLogger()
 
 func (m *RPCManager) calculateMetrics(endpoint *RPCEndpoint) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -39,7 +38,7 @@ func (m *RPCManager) calculateMetrics(endpoint *RPCEndpoint) error {
 
 	endpoint.BlockNumber = blockNumber
 	endpoint.Latency = latency
-	endpoint.Client = client // Store the client for future use
+	endpoint.Client = client
 
 	return nil
 }
@@ -51,14 +50,14 @@ func (m *RPCManager) updateAndSortEndpoints() error {
 	}
 
 	var wg sync.WaitGroup
-	log.Debug("Starting concurrent metrics calculation for all endpoints...")
+	logrus.Debug("Starting concurrent metrics calculation for all endpoints...")
 
 	for _, endpoint := range m.Endpoints {
 		wg.Add(1)
 		go func(ep *RPCEndpoint) {
 			defer wg.Done()
 			if err := m.calculateMetrics(ep); err != nil {
-				log.Printf("Error calculating metrics for endpoint %s: %v", ep.URL, err)
+				logrus.Errorf("Error calculating metrics for endpoint %s: %v", ep.URL, err)
 			}
 		}(endpoint)
 	}
@@ -76,8 +75,12 @@ func (m *RPCManager) updateAndSortEndpoints() error {
 		return m.Endpoints[i].BlockNumber > m.Endpoints[j].BlockNumber
 	})
 
-	// Update the best RPC client after sorting
+	// Update the best RPC client and endpoint after sorting
 	m.BestRPCClient = m.Endpoints[0].Client
+	m.BestEndpoint = m.Endpoints[0]
+
+	logrus.Infof("Best RPC endpoint updated: %s (BlockNumber: %d, Latency: %.2f)",
+		m.BestEndpoint.URL, m.BestEndpoint.BlockNumber, m.BestEndpoint.Latency)
 
 	return nil
 }
@@ -87,7 +90,7 @@ func (m *RPCManager) RefreshEndpoints() error {
 	if err := m.updateAndSortEndpoints(); err != nil {
 		return fmt.Errorf("failed to refresh endpoints: %w", err)
 	}
-	log.Infof("Endpoints refreshed successfully")
+	logrus.Infof("Endpoints refreshed successfully")
 	return nil
 }
 
@@ -122,7 +125,7 @@ func InitializeRPCManager(provider string) (*RPCManager, error) {
 
 	// If the provider is not found, add it to the list
 	if !providerFound && provider != "" {
-		log.Infof("Adding user-provided endpoint: %s", provider)
+		logrus.Infof("Adding user-provided endpoint: %s", provider)
 		rpcEndpointsList = append(rpcEndpointsList, provider)
 	}
 
@@ -154,14 +157,27 @@ func (m *RPCManager) GetBestRPCClient() (*ethclient.Client, error) {
 	return m.BestRPCClient, nil
 }
 
+// GetBestEndpointURL returns the URL of the best endpoint
+func (m *RPCManager) GetBestEndpointURL() (string, error) {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+
+	if m.BestEndpoint == nil {
+		return "", fmt.Errorf("no best endpoint available")
+	}
+	return m.BestEndpoint.URL, nil
+}
+
 // SwitchToNextBestRPCClient switches to the next best available client after the current best client.
+// If no valid next best client is found, it retains the current best client.
 func (m *RPCManager) SwitchToNextBestRPCClient() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	// If there are fewer than 2 endpoints, there are no alternate clients to switch to.
 	if len(m.Endpoints) < 2 {
-		return fmt.Errorf("no other RPC clients to switch to")
+		logrus.Warn("No alternate RPC clients available. Retaining the current best client.")
+		return nil
 	}
 
 	// Find the index of the current best client
@@ -173,16 +189,36 @@ func (m *RPCManager) SwitchToNextBestRPCClient() error {
 		}
 	}
 
-	// If current client is not found (which is rare), return an error
+	// If the current client is not found (which is rare), return an error
 	if currentIndex == -1 {
 		return fmt.Errorf("current best client not found in the list of endpoints")
 	}
 
-	// Calculate the next index by wrapping around if necessary
-	nextIndex := (currentIndex + 1) % len(m.Endpoints)
+	// Iterate through the remaining endpoints to find a valid next best client
+	for i := 1; i < len(m.Endpoints); i++ {
+		nextIndex := (currentIndex + i) % len(m.Endpoints)
+		nextEndpoint := m.Endpoints[nextIndex]
 
-	// Switch to the next client in the list
-	m.BestRPCClient = m.Endpoints[nextIndex].Client
-	log.Infof("Switched to the next best RPC client: %s", m.Endpoints[nextIndex].URL)
+		// Check if we can connect to the next endpoint
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		client, err := ethclient.DialContext(ctx, nextEndpoint.URL)
+		if err != nil {
+			logrus.Errorf("Failed to connect to RPC endpoint %s: %v", nextEndpoint.URL, err)
+			continue
+		}
+
+		// Successfully connected, update the best client and endpoint
+		m.BestRPCClient = client
+		m.BestEndpoint = nextEndpoint
+
+		logrus.Infof("Switched to the next best RPC endpoint: %s (BlockNumber: %d, Latency: %.2f)",
+			m.BestEndpoint.URL, m.BestEndpoint.BlockNumber, m.BestEndpoint.Latency)
+		return nil
+	}
+
+	// If no valid endpoint is found, retain the current best client
+	logrus.Warn("No valid next-best RPC client found. Retaining the current best client.")
 	return nil
 }
