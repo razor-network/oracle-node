@@ -20,7 +20,7 @@ import (
 
 // Logger encapsulates logrus and its dependencies for contextual logging.
 type Logger struct {
-	logrusInstance *logrus.Logger
+	LogrusInstance *logrus.Logger
 	address        string
 	client         *ethclient.Client
 	blockMonitor   *block.BlockMonitor
@@ -45,7 +45,7 @@ func init() {
 	InitializeLogger("", types.Configurations{})
 
 	osInfo := goInfo.GetInfo()
-	globalLogger.logrusInstance.WithFields(logrus.Fields{
+	globalLogger.LogrusInstance.WithFields(logrus.Fields{
 		"Operating System": osInfo.OS,
 		"Core":             osInfo.Core,
 		"Platform":         osInfo.Platform,
@@ -59,7 +59,7 @@ func init() {
 //NewLogger initializes a Logger instance with given parameters.
 func NewLogger(address string, client *ethclient.Client, blockMonitor *block.BlockMonitor) *Logger {
 	logger := &Logger{
-		logrusInstance: logrus.New(),
+		LogrusInstance: logrus.New(),
 		address:        address,
 		client:         client,
 		blockMonitor:   blockMonitor,
@@ -87,15 +87,15 @@ func InitializeLogger(fileName string, config types.Configurations) {
 		}
 
 		mw := io.MultiWriter(os.Stderr, lumberJackLogger)
-		globalLogger.logrusInstance.SetOutput(mw)
+		globalLogger.LogrusInstance.SetOutput(mw)
 	}
-	globalLogger.logrusInstance.Formatter = &logrus.JSONFormatter{}
+	globalLogger.LogrusInstance.Formatter = &logrus.JSONFormatter{}
 }
 
 // logSystemInfo logs system-related details at initialization.
 func (l *Logger) logSystemInfo() {
 	osInfo := goInfo.GetInfo()
-	l.logrusInstance.WithFields(logrus.Fields{
+	l.LogrusInstance.WithFields(logrus.Fields{
 		"Operating System": osInfo.OS,
 		"Core":             osInfo.Core,
 		"Platform":         osInfo.Platform,
@@ -114,7 +114,7 @@ func (l *Logger) Error(args ...interface{}) {
 		"blockNumber": blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	l.logrusInstance.WithFields(logFields).Errorln(args...)
+	l.LogrusInstance.WithFields(logFields).Errorln(args...)
 }
 
 // Info logs a simple informational message.
@@ -126,7 +126,7 @@ func (l *Logger) Info(args ...interface{}) {
 		"blockNumber": blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	l.logrusInstance.WithFields(logFields).Infoln(args...)
+	l.LogrusInstance.WithFields(logFields).Infoln(args...)
 }
 
 // Debug logs a simple debug message.
@@ -138,7 +138,7 @@ func (l *Logger) Debug(args ...interface{}) {
 		"blockNumber": blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	l.logrusInstance.WithFields(logFields).Debugln(args...)
+	l.LogrusInstance.WithFields(logFields).Debugln(args...)
 }
 
 // Fatal logs a fatal error message and exits the application.
@@ -152,7 +152,7 @@ func (l *Logger) Fatal(args ...interface{}) {
 	}
 	errMsg := joinString(args)
 	err := errors.New(errMsg)
-	l.logrusInstance.WithFields(logFields).Fatalln(err)
+	l.LogrusInstance.WithFields(logFields).Fatalln(err)
 }
 
 // Warn logs a simple warning message.
@@ -164,7 +164,7 @@ func (l *Logger) Warn(args ...interface{}) {
 		"blockNumber": blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	l.logrusInstance.WithFields(logFields).Warnln(args...)
+	l.LogrusInstance.WithFields(logFields).Warnln(args...)
 }
 
 // Errorf logs a formatted error message.
@@ -176,7 +176,7 @@ func (l *Logger) Errorf(format string, args ...interface{}) {
 		"blockNumber": blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	l.logrusInstance.WithFields(logFields).Errorf(format, args...)
+	l.LogrusInstance.WithFields(logFields).Errorf(format, args...)
 }
 
 // Infof logs a formatted informational message.
@@ -188,7 +188,7 @@ func (l *Logger) Infof(format string, args ...interface{}) {
 		"blockNumber": blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	l.logrusInstance.WithFields(logFields).Infof(format, args...)
+	l.LogrusInstance.WithFields(logFields).Infof(format, args...)
 }
 
 // Debugf logs a formatted debug message.
@@ -200,7 +200,7 @@ func (l *Logger) Debugf(format string, args ...interface{}) {
 		"blockNumber": blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	l.logrusInstance.WithFields(logFields).Debugf(format, args...)
+	l.LogrusInstance.WithFields(logFields).Debugf(format, args...)
 }
 
 // Fatalf logs a formatted fatal error message and exits the application.
@@ -214,7 +214,7 @@ func (l *Logger) Fatalf(format string, args ...interface{}) {
 	}
 	errMsg := joinString(args...)
 	err := errors.New(errMsg)
-	l.logrusInstance.WithFields(logFields).Fatalf(format, err)
+	l.LogrusInstance.WithFields(logFields).Fatalf(format, err)
 }
 
 // Warnf logs a formatted warning message.
@@ -226,7 +226,7 @@ func (l *Logger) Warnf(format string, args ...interface{}) {
 		"blockNumber": blockNumber,
 		"version":     core.VersionWithMeta,
 	}
-	l.logrusInstance.WithFields(logFields).Warnf(format, args...)
+	l.LogrusInstance.WithFields(logFields).Warnf(format, args...)
 }
 
 // joinString concatenates multiple arguments into a single string.
@@ -241,7 +241,7 @@ func joinString(args ...interface{}) string {
 
 // SetLogLevel sets the log level for the logger instance.
 func (l *Logger) SetLogLevel(level logrus.Level) {
-	l.logrusInstance.SetLevel(level)
+	l.LogrusInstance.SetLevel(level)
 }
 
 // updateBlockInfo fetches block info from the BlockMonitor.
