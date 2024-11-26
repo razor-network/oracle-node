@@ -104,9 +104,9 @@ func TestExecuteDelegate(t *testing.T) {
 		delegateErr  error
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	tests := []struct {
 		name          string
@@ -238,6 +238,7 @@ func TestExecuteDelegate(t *testing.T) {
 			SetUpMockInterfaces()
 			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -246,7 +247,6 @@ func TestExecuteDelegate(t *testing.T) {
 			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			flagSetMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			pathMock.On("GetDefaultPath").Return(testDir, nil)
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 			utilsMock.On("FetchBalance", mock.Anything, mock.Anything).Return(tt.args.balance, tt.args.balanceErr)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.amount, tt.args.amountErr)

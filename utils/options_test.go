@@ -100,9 +100,9 @@ func Test_getGasPrice(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -252,15 +252,15 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 		},
 	}
 
-	originalExitFunc := log.ExitFunc                   // Preserve the original ExitFunc
-	defer func() { log.ExitFunc = originalExitFunc }() // Ensure it's reset after tests
+	originalExitFunc := log.LogrusInstance.ExitFunc                   // Preserve the original ExitFunc
+	defer func() { log.LogrusInstance.ExitFunc = originalExitFunc }() // Ensure it's reset after tests
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fatalOccurred := false
 
 			// Override log.ExitFunc to induce a panic for testing the fatal scenario
-			log.ExitFunc = func(int) { panic("log.Fatal called") }
+			log.LogrusInstance.ExitFunc = func(int) { panic("log.Fatal called") }
 
 			var account types.Account
 			accountManager := accounts.NewAccountManager("test_accounts")

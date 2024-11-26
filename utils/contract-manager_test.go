@@ -38,9 +38,9 @@ func TestGetStakeManager(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -91,9 +91,9 @@ func TestGetStakedToken(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -143,9 +143,9 @@ func TestGetTokenManager(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -195,9 +195,9 @@ func TestGetAssetManager(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -247,9 +247,9 @@ func TestGetBlockManager(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -299,9 +299,9 @@ func TestGetVoteManager(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

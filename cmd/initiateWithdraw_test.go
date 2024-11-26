@@ -351,15 +351,16 @@ func TestExecuteWithdraw(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -368,7 +369,6 @@ func TestExecuteWithdraw(t *testing.T) {
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			pathMock.On("GetDefaultPath").Return(testDir, nil)
 			cmdUtilsMock.On("HandleUnstakeLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawHash, tt.args.withdrawErr)
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 

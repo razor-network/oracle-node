@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"razor/core/types"
 	"testing"
 
 	"github.com/spf13/pflag"
@@ -74,7 +75,10 @@ func TestSetConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
+			cmdUtilsMock.On("GetConfigData").Return(types.Configurations{}, nil)
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(false)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			flagSetMock.On("FetchFlagInput", flagSet, mock.Anything, mock.Anything).Return(tt.args.flagInput, tt.args.flagInputErr)
 			flagSetMock.On("Changed", mock.Anything, mock.Anything).Return(tt.args.isFlagPassed)
