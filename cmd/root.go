@@ -3,11 +3,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"os"
-	"razor/block"
 	"razor/core"
-	"razor/core/types"
 	"razor/logger"
 	"razor/path"
 
@@ -32,11 +29,7 @@ var (
 	LogFileMaxAge      int
 )
 
-var log = logger.NewLogger("", &ethclient.Client{}, "", types.Configurations{}, &block.BlockMonitor{})
-
-func UpdateCmdLogger(updatedLogger *logger.Logger) {
-	log = updatedLogger
-}
+var log = logger.GetLogger()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

@@ -10,6 +10,7 @@ import (
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
+	"razor/logger"
 	"time"
 
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -281,18 +282,17 @@ func (*FileStruct) ReadFromCommitJsonFile(filePath string) (types.CommitFileData
 	return commitedData, nil
 }
 
-func (*FileStruct) AssignLogFile(flagSet *pflag.FlagSet) (string, error) {
+func (*FileStruct) AssignLogFile(flagSet *pflag.FlagSet, configurations types.Configurations) {
 	if UtilsInterface.IsFlagPassed("logFile") {
 		fileName, err := FlagSetInterface.GetLogFileName(flagSet)
 		if err != nil {
-			log.Error("Error in getting file name: ", err)
-			return "", err
+			log.Fatal("Error in getting file name: ", err)
 		}
 		log.Debug("Log file name: ", fileName)
-		return fileName, nil
+		logger.InitializeLogger(fileName, configurations)
+	} else {
+		log.Debug("No `logFile` flag passed, not storing logs in any file")
 	}
-	log.Debug("No `logFile` flag passed, not storing logs in any file")
-	return "", nil
 }
 
 func (*FileStruct) SaveDataToProposeJsonFile(filePath string, proposeData types.ProposeFileData) error {

@@ -145,7 +145,7 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 	}
 	log.Debugf("Config: %+v", config)
 
-	if flagSet.Changed("address") {
+	if razorUtils.IsFlagPassed("address") {
 		address, err := flagSetUtils.GetStringAddress(flagSet)
 		if err != nil {
 			log.Error("Error in getting address: ", err)
@@ -168,47 +168,35 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 			log.Error("Error in fetching private key from given password: ", err)
 			return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 		}
-
-		rpcManager, err := RPC.InitializeRPCManager(config.Provider)
-		if err != nil {
-			log.Error("Error in initializing RPC Manager: ", err)
-			return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
-		}
-
-		rpcParameters = RPC.RPCParameters{
-			RPCManager: rpcManager,
-			Ctx:        context.Background(),
-		}
-
-		client, err = rpcManager.GetBestRPCClient()
-		if err != nil {
-			log.Error("Error in getting best RPC client: ", err)
-			return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
-		}
-
-		// Initialize BlockMonitor with RPCManager
-		blockMonitor = block.NewBlockMonitor(client, rpcManager, core.BlockNumberInterval, core.StaleBlockNumberCheckInterval, func() {
-			log.Warn("Custom action on stale block detected.")
-		})
-		blockMonitor.Start()
 	}
 
-	log.Debug("Checking to assign log file...")
-	logFileName, err := fileUtils.AssignLogFile(flagSet)
+	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
 	if err != nil {
-		log.Error("Error in getting log file name: ", err)
+		log.Error("Error in initializing RPC Manager: ", err)
 		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 
-	// Initialize Logger
-	updatedLogger := logger.NewLogger(account.Address, client, logFileName, config, blockMonitor)
-	updateModuleLoggerInstances(updatedLogger)
+	rpcParameters = RPC.RPCParameters{
+		RPCManager: rpcManager,
+		Ctx:        context.Background(),
+	}
+
+	client, err = rpcManager.GetBestRPCClient()
+	if err != nil {
+		log.Error("Error in getting best RPC client: ", err)
+		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
+	}
+
+	// Initialize BlockMonitor with RPCManager
+	blockMonitor = block.NewBlockMonitor(client, rpcManager, core.BlockNumberInterval, core.StaleBlockNumberCheckInterval, func() {
+		log.Warn("Custom action on stale block detected.")
+	})
+	blockMonitor.Start()
+	log.Debug("Checking to assign log file...")
+	fileUtils.AssignLogFile(flagSet, config)
+
+	// Update Logger Instance
+	logger.UpdateLogger(account.Address, client, blockMonitor)
 
 	return config, rpcParameters, account, nil
-}
-
-func updateModuleLoggerInstances(updatedLogger *logger.Logger) {
-	UpdateCmdLogger(updatedLogger)
-	utils.UpdateUtilsLogger(updatedLogger)
-	accounts.UpdateAccountsLogger(updatedLogger)
 }
