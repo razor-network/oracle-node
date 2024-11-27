@@ -2,13 +2,11 @@
 package cmd
 
 import (
-	"context"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
 	"razor/RPC"
-	"razor/logger"
 	"razor/utils"
 	"strconv"
 )
@@ -31,20 +29,8 @@ func initialiseJobList(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the GetJobList function
 func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteJobList: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-	logger.SetLoggerParameters(client, "")
-
-	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
-	utils.CheckError("Error in initializing RPC Manager: ", err)
-
-	rpcParameters := RPC.RPCParameters{
-		RPCManager: rpcManager,
-		Ctx:        context.Background(),
-	}
+	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("ExecuteJobList: Calling JobList()...")
 	err = cmdUtils.GetJobList(rpcParameters)

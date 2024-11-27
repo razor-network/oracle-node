@@ -372,7 +372,7 @@ func (*UtilsStruct) GetLogFileMaxAge() (int, error) {
 //This function sets the log level
 func setLogLevel(config types.Configurations) {
 	if config.LogLevel == "debug" {
-		log.SetLevel(logrus.DebugLevel)
+		log.SetLogLevel(logrus.DebugLevel)
 	}
 
 	log.Debugf("Config details: %+v", config)

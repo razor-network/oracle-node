@@ -266,18 +266,18 @@ func (d *DummyRPC) SlowMethod(client *ethclient.Client) error {
 	return nil
 }
 
-var testDir = "/tmp/test_rzr"
-
 func setupTestEndpointsEnvironment() {
+	var testDir = "/tmp/test_rzr"
+	pathMock.On("GetDefaultPath").Return(testDir, nil)
 	err := os.MkdirAll(testDir, 0755)
 	if err != nil {
-		log.Fatalf("failed to create test directory: %w", err)
+		log.Fatalf("failed to create test directory: %s", err.Error())
 	}
 
 	mockEndpoints := `["https://testnet.skalenodes.com/v1/juicy-low-small-testnet"]`
 	mockFilePath := filepath.Join(testDir, "endpoints.json")
 	err = os.WriteFile(mockFilePath, []byte(mockEndpoints), 0644)
 	if err != nil {
-		log.Fatalf("failed to write mock endpoints.json: %w", err)
+		log.Fatalf("failed to write mock endpoints.json: %s", err.Error())
 	}
 }

@@ -96,9 +96,9 @@ func TestCalculateBlockTime(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -158,9 +158,9 @@ func TestCheckEthBalanceIsZero(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -214,9 +214,9 @@ func TestCheckTransactionReceipt(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -269,9 +269,9 @@ func TestConnectToClient(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -804,9 +804,9 @@ func TestAssignStakerId(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -871,9 +871,9 @@ func TestAssignLogFile(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

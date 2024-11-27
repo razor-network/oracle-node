@@ -4,9 +4,12 @@ package cmd
 import (
 	"context"
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"razor/RPC"
 	"razor/accounts"
+	"razor/block"
+	"razor/core"
 	"razor/core/types"
 	"razor/logger"
 	"razor/utils"
@@ -128,6 +131,13 @@ func GetFormattedStateNames(states []int) string {
 }
 
 func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations, RPC.RPCParameters, types.Account, error) {
+	var (
+		account       types.Account
+		client        *ethclient.Client
+		rpcParameters RPC.RPCParameters
+		blockMonitor  *block.BlockMonitor
+	)
+
 	config, err := cmdUtils.GetConfigData()
 	if err != nil {
 		log.Error("Error in getting config: ", err)
@@ -135,31 +145,29 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 	}
 	log.Debugf("Config: %+v", config)
 
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	if err != nil {
-		log.Error("Error in getting address: ", err)
-		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
-	}
-	log.Debugf("Address: %v", address)
+	if razorUtils.IsFlagPassed("address") {
+		address, err := flagSetUtils.GetStringAddress(flagSet)
+		if err != nil {
+			log.Error("Error in getting address: ", err)
+			return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
+		}
+		log.Debugf("Address: %v", address)
 
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
+		log.Debug("Getting password...")
+		password := razorUtils.AssignPassword(flagSet)
 
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
+		accountManager, err := razorUtils.AccountManagerForKeystore()
+		if err != nil {
+			log.Error("Error in getting accounts manager for keystore: ", err)
+			return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
+		}
 
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	if err != nil {
-		log.Error("Error in getting accounts manager for keystore: ", err)
-		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
-	}
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	if err != nil {
-		log.Error("Error in fetching private key from given password: ", err)
-		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
+		account = accounts.InitAccountStruct(address, password, accountManager)
+		err = razorUtils.CheckPassword(account)
+		if err != nil {
+			log.Error("Error in fetching private key from given password: ", err)
+			return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
+		}
 	}
 
 	rpcManager, err := RPC.InitializeRPCManager(config.Provider)
@@ -168,18 +176,25 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 
-	rpcParameters := RPC.RPCParameters{
+	rpcParameters = RPC.RPCParameters{
 		RPCManager: rpcManager,
 		Ctx:        context.Background(),
 	}
 
-	client, err := rpcManager.GetBestRPCClient()
+	client, err = rpcManager.GetBestRPCClient()
 	if err != nil {
 		log.Error("Error in getting best RPC client: ", err)
 		return types.Configurations{}, RPC.RPCParameters{}, types.Account{}, err
 	}
 
-	logger.SetLoggerParameters(client, address)
+	// Initialize BlockMonitor with RPCManager
+	blockMonitor = block.NewBlockMonitor(client, rpcManager, core.BlockNumberInterval, core.StaleBlockNumberCheckInterval)
+	blockMonitor.Start()
+	log.Debug("Checking to assign log file...")
+	fileUtils.AssignLogFile(flagSet, config)
+
+	// Update Logger Instance
+	logger.UpdateLogger(account.Address, client, blockMonitor)
 
 	return config, rpcParameters, account, nil
 }

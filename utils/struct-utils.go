@@ -166,14 +166,20 @@ func InvokeFunctionWithRetryAttempts(rpcParameters RPC.RPCParameters, interfaceN
 			log.Errorf("%v error after retries: %v", methodName, err)
 			log.Info("Attempting to switch to a new best RPC endpoint...")
 
-			// Attempt to switch to the next best client
-			switchErr := rpcParameters.RPCManager.SwitchToNextBestRPCClient()
+			switched, switchErr := rpcParameters.RPCManager.SwitchToNextBestRPCClient()
 			if switchErr != nil {
 				log.Errorf("Failed to switch to the next best client: %v", switchErr)
 				return returnedValues, switchErr
 			}
+
+			if switched {
+				log.Infof("Successfully switched to a new RPC endpoint after RPC error.")
+			} else {
+				log.Warnf("No switch occurred. Retaining the current RPC client.")
+			}
 		}
 	}
+
 	return returnedValues, err
 }
 

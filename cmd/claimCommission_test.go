@@ -189,16 +189,16 @@ func TestClaimCommission(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 			setupTestEndpointsEnvironment()
-			fatal = false
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			utilsMock.On("GetOptions").Return(callOpts)
@@ -206,7 +206,6 @@ func TestClaimCommission(t *testing.T) {
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			pathMock.On("GetDefaultPath").Return(testDir, nil)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
@@ -218,6 +217,8 @@ func TestClaimCommission(t *testing.T) {
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
+			fatal = false
+
 			utils.ClaimCommission(flagSet)
 			if fatal != tt.expectedFatal {
 				t.Error("The executeClaimBounty function didn't execute as expected")

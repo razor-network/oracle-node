@@ -265,15 +265,16 @@ func TestExecuteUpdateCollection(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -285,7 +286,6 @@ func TestExecuteUpdateCollection(t *testing.T) {
 			flagSetMock.On("GetUint32Aggregation", flagSet).Return(tt.args.aggregation, tt.args.aggregationErr)
 			flagSetMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			pathMock.On("GetDefaultPath").Return(testDir, nil)
 			cmdUtilsMock.On("UpdateCollection", mock.Anything, config, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 			flagSetMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)

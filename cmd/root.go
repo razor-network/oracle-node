@@ -29,7 +29,7 @@ var (
 	LogFileMaxAge      int
 )
 
-var log = logger.NewLogger()
+var log = logger.GetLogger()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
