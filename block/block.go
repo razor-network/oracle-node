@@ -13,23 +13,21 @@ import (
 
 // BlockMonitor monitors the latest block and handles stale blocks.
 type BlockMonitor struct {
-	client             *ethclient.Client
-	rpcManager         *RPC.RPCManager
-	latestBlock        *types.Header
-	mu                 sync.Mutex
-	checkInterval      time.Duration
-	staleThreshold     time.Duration
-	staleBlockCallback func()
+	client         *ethclient.Client
+	rpcManager     *RPC.RPCManager
+	latestBlock    *types.Header
+	mu             sync.Mutex
+	checkInterval  time.Duration
+	staleThreshold time.Duration
 }
 
 // NewBlockMonitor initializes a BlockMonitor with RPC integration.
-func NewBlockMonitor(client *ethclient.Client, rpcManager *RPC.RPCManager, checkInterval, staleThreshold time.Duration, staleBlockCallback func()) *BlockMonitor {
+func NewBlockMonitor(client *ethclient.Client, rpcManager *RPC.RPCManager, checkInterval, staleThreshold time.Duration) *BlockMonitor {
 	return &BlockMonitor{
-		client:             client,
-		rpcManager:         rpcManager,
-		checkInterval:      time.Second * checkInterval,
-		staleThreshold:     time.Second * staleThreshold,
-		staleBlockCallback: staleBlockCallback,
+		client:         client,
+		rpcManager:     rpcManager,
+		checkInterval:  time.Second * checkInterval,
+		staleThreshold: time.Second * staleThreshold,
 	}
 }
 
@@ -86,18 +84,15 @@ func (bm *BlockMonitor) checkForStaleBlock() {
 
 		// Switch to the next best RPC endpoint if stale block detected.
 		if bm.rpcManager != nil {
-			err := bm.rpcManager.SwitchToNextBestRPCClient()
+			switched, err := bm.rpcManager.SwitchToNextBestRPCClient()
 			if err != nil {
 				logrus.Errorf("Failed to switch RPC endpoint: %v", err)
-			} else {
+			} else if switched {
 				logrus.Info("Switched to the next best RPC endpoint.")
 				bm.updateClient()
+			} else {
+				logrus.Warn("Retaining the current best RPC endpoint as no valid alternate was found.")
 			}
-		}
-
-		// Trigger the stale block callback if provided.
-		if bm.staleBlockCallback != nil {
-			bm.staleBlockCallback()
 		}
 	}
 }

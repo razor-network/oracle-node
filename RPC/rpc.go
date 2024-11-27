@@ -171,14 +171,14 @@ func (m *RPCManager) GetBestEndpointURL() (string, error) {
 
 // SwitchToNextBestRPCClient switches to the next best available client after the current best client.
 // If no valid next best client is found, it retains the current best client.
-func (m *RPCManager) SwitchToNextBestRPCClient() error {
+func (m *RPCManager) SwitchToNextBestRPCClient() (bool, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	// If there are fewer than 2 endpoints, there are no alternate clients to switch to.
 	if len(m.Endpoints) < 2 {
 		logrus.Warn("No alternate RPC clients available. Retaining the current best client.")
-		return nil
+		return false, nil
 	}
 
 	// Find the index of the current best client
@@ -192,7 +192,7 @@ func (m *RPCManager) SwitchToNextBestRPCClient() error {
 
 	// If the current client is not found (which is rare), return an error
 	if currentIndex == -1 {
-		return fmt.Errorf("current best client not found in the list of endpoints")
+		return false, fmt.Errorf("current best client not found in the list of endpoints")
 	}
 
 	// Iterate through the remaining endpoints to find a valid next best client
@@ -223,12 +223,12 @@ func (m *RPCManager) SwitchToNextBestRPCClient() error {
 
 		logrus.Infof("Switched to the next best RPC endpoint: %s (BlockNumber: %d, Latency: %.2f)",
 			m.BestEndpoint.URL, m.BestEndpoint.BlockNumber, m.BestEndpoint.Latency)
-		return nil
+		return true, nil
 	}
 
 	// If no valid endpoint is found, retain the current best client
 	logrus.Warn("No valid next-best RPC client found. Retaining the current best client.")
-	return nil
+	return false, nil
 }
 
 func (m *RPCManager) fetchBlockNumberWithTimeout(ctx context.Context, client *ethclient.Client) (uint64, error) {
