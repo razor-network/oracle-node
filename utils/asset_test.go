@@ -28,7 +28,9 @@ import (
 )
 
 var rpcManager = RPC.RPCManager{
-	BestRPCClient: &ethclient.Client{},
+	BestEndpoint: &RPC.RPCEndpoint{
+		Client: &ethclient.Client{},
+	},
 }
 
 var rpcParameters = RPC.RPCParameters{

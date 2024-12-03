@@ -192,7 +192,7 @@ _Before staking on Razor Network, please ensure your account has sFUEL and RAZOR
 
 ### Import Endpoints
 
-You can import the endpoints mentioned in `endpoints.json` from the repository to your `$HOME/.razor/endpoints.json` file using the `importEndpoints` command.
+You can import the endpoints to file `$HOME/.razor/endpoints.json` on your local by using the `importEndpoints` command.
 This multiple providers along with the user input provider are sorted according to the best performance and the best provider is chosen by the RPC manager which will be used to make the RPC calls.
 
 razor cli

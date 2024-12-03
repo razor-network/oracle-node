@@ -76,8 +76,7 @@ func (m *RPCManager) updateAndSortEndpoints() error {
 		return m.Endpoints[i].BlockNumber > m.Endpoints[j].BlockNumber
 	})
 
-	// Update the best RPC client and endpoint after sorting
-	m.BestRPCClient = m.Endpoints[0].Client
+	// Update the best RPC endpoint after sorting
 	m.BestEndpoint = m.Endpoints[0]
 
 	logrus.Infof("Best RPC endpoint updated: %s (BlockNumber: %d, Latency: %.2f)",
@@ -152,10 +151,10 @@ func (m *RPCManager) GetBestRPCClient() (*ethclient.Client, error) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 
-	if m.BestRPCClient == nil {
+	if m.BestEndpoint.Client == nil {
 		return nil, fmt.Errorf("no best RPC client available")
 	}
-	return m.BestRPCClient, nil
+	return m.BestEndpoint.Client, nil
 }
 
 // GetBestEndpointURL returns the URL of the best endpoint
@@ -184,7 +183,7 @@ func (m *RPCManager) SwitchToNextBestRPCClient() (bool, error) {
 	// Find the index of the current best client
 	var currentIndex = -1
 	for i, endpoint := range m.Endpoints {
-		if endpoint.Client == m.BestRPCClient {
+		if endpoint.Client == m.BestEndpoint.Client {
 			currentIndex = i
 			break
 		}
@@ -218,7 +217,7 @@ func (m *RPCManager) SwitchToNextBestRPCClient() (bool, error) {
 		}
 
 		// Successfully connected and validated, update the best client and endpoint
-		m.BestRPCClient = client
+		m.BestEndpoint.Client = client
 		m.BestEndpoint = nextEndpoint
 
 		logrus.Infof("Switched to the next best RPC endpoint: %s (BlockNumber: %d, Latency: %.2f)",

@@ -182,7 +182,9 @@ var privateKey, _ = ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 var TxnOpts, _ = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000)) // Used any random big int for chain ID
 
 var rpcManager = RPC.RPCManager{
-	BestRPCClient: &ethclient.Client{},
+	BestEndpoint: &RPC.RPCEndpoint{
+		Client: &ethclient.Client{},
+	},
 }
 var rpcParameters = RPC.RPCParameters{
 	Ctx:        context.Background(),
