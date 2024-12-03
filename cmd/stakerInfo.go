@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
-	"razor/RPC"
+	"razor/rpc"
 	"razor/utils"
 	"strconv"
 )
@@ -42,7 +42,7 @@ func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
 }
 
 //This function provides the staker details like age, stake, maturity etc.
-func (*UtilsStruct) GetStakerInfo(rpcParameters RPC.RPCParameters, stakerId uint32) error {
+func (*UtilsStruct) GetStakerInfo(rpcParameters rpc.RPCParameters, stakerId uint32) error {
 	stakerInfo, err := razorUtils.StakerInfo(rpcParameters, stakerId)
 	if err != nil {
 		return err

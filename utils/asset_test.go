@@ -8,13 +8,13 @@ import (
 	"math/big"
 	"net/http"
 	"os"
-	"razor/RPC"
 	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
 	pathMocks "razor/path/mocks"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils/mocks"
 	"reflect"
 	"regexp"
@@ -27,13 +27,13 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var rpcManager = RPC.RPCManager{
-	BestEndpoint: &RPC.RPCEndpoint{
+var rpcManager = rpc.RPCManager{
+	BestEndpoint: &rpc.RPCEndpoint{
 		Client: &ethclient.Client{},
 	},
 }
 
-var rpcParameters = RPC.RPCParameters{
+var rpcParameters = rpc.RPCParameters{
 	Ctx:        context.Background(),
 	RPCManager: &rpcManager,
 }

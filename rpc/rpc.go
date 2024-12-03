@@ -1,4 +1,4 @@
-package RPC
+package rpc
 
 import (
 	"context"

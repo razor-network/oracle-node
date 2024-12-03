@@ -9,11 +9,11 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
-	"razor/RPC"
 	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"reflect"
 	"strings"
 	"time"
@@ -111,7 +111,7 @@ func CheckIfAnyError(result []reflect.Value) error {
 	return nil
 }
 
-func InvokeFunctionWithRetryAttempts(rpcParameters RPC.RPCParameters, interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
+func InvokeFunctionWithRetryAttempts(rpcParameters rpc.RPCParameters, interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
 	var returnedValues []reflect.Value
 	var err error
 	var contextError bool

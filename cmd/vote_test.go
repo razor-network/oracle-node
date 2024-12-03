@@ -8,11 +8,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"razor/RPC"
 	"razor/accounts"
 	"razor/cache"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 	"reflect"
 	"testing"
@@ -1329,7 +1329,7 @@ func TestVote(t *testing.T) {
 			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything).Return(tt.args.header, nil)
 			cmdUtilsMock.On("HandleBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-			localRpcParameters := RPC.RPCParameters{
+			localRpcParameters := rpc.RPCParameters{
 				Ctx:        ctx,
 				RPCManager: &rpcManager,
 			}

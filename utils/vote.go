@@ -2,9 +2,9 @@ package utils
 
 import (
 	"math/big"
-	"razor/RPC"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -14,7 +14,7 @@ func (*UtilsStruct) GetVoteManagerWithOpts(client *ethclient.Client) (*bindings.
 	return UtilsInterface.GetVoteManager(client), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetCommitment(rpcParameters RPC.RPCParameters, address string) (types.Commitment, error) {
+func (*UtilsStruct) GetCommitment(rpcParameters rpc.RPCParameters, address string) (types.Commitment, error) {
 	stakerId, err := UtilsInterface.GetStakerId(rpcParameters, address)
 	if err != nil {
 		return types.Commitment{}, err
@@ -27,7 +27,7 @@ func (*UtilsStruct) GetCommitment(rpcParameters RPC.RPCParameters, address strin
 	return commitment, nil
 }
 
-func (*UtilsStruct) GetVoteValue(rpcParameters RPC.RPCParameters, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
+func (*UtilsStruct) GetVoteValue(rpcParameters rpc.RPCParameters, epoch uint32, stakerId uint32, medianIndex uint16) (*big.Int, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "GetVoteValue", epoch, stakerId, medianIndex)
 	if err != nil {
 		return big.NewInt(0), err
@@ -35,7 +35,7 @@ func (*UtilsStruct) GetVoteValue(rpcParameters RPC.RPCParameters, epoch uint32, 
 	return returnedValues[0].Interface().(*big.Int), nil
 }
 
-func (*UtilsStruct) GetInfluenceSnapshot(rpcParameters RPC.RPCParameters, stakerId uint32, epoch uint32) (*big.Int, error) {
+func (*UtilsStruct) GetInfluenceSnapshot(rpcParameters rpc.RPCParameters, stakerId uint32, epoch uint32) (*big.Int, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "GetInfluenceSnapshot", epoch, stakerId)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (*UtilsStruct) GetInfluenceSnapshot(rpcParameters RPC.RPCParameters, staker
 	return returnedValues[0].Interface().(*big.Int), nil
 }
 
-func (*UtilsStruct) GetStakeSnapshot(rpcParameters RPC.RPCParameters, stakerId uint32, epoch uint32) (*big.Int, error) {
+func (*UtilsStruct) GetStakeSnapshot(rpcParameters rpc.RPCParameters, stakerId uint32, epoch uint32) (*big.Int, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "GetStakeSnapshot", epoch, stakerId)
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (*UtilsStruct) GetStakeSnapshot(rpcParameters RPC.RPCParameters, stakerId u
 	return returnedValues[0].Interface().(*big.Int), nil
 }
 
-func (*UtilsStruct) GetTotalInfluenceRevealed(rpcParameters RPC.RPCParameters, epoch uint32, medianIndex uint16) (*big.Int, error) {
+func (*UtilsStruct) GetTotalInfluenceRevealed(rpcParameters rpc.RPCParameters, epoch uint32, medianIndex uint16) (*big.Int, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "GetTotalInfluenceRevealed", epoch, medianIndex)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (*UtilsStruct) GetTotalInfluenceRevealed(rpcParameters RPC.RPCParameters, e
 	return returnedValues[0].Interface().(*big.Int), nil
 }
 
-func (*UtilsStruct) GetEpochLastCommitted(rpcParameters RPC.RPCParameters, stakerId uint32) (uint32, error) {
+func (*UtilsStruct) GetEpochLastCommitted(rpcParameters rpc.RPCParameters, stakerId uint32) (uint32, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "GetEpochLastCommitted", stakerId)
 	if err != nil {
 		return 0, err
@@ -67,7 +67,7 @@ func (*UtilsStruct) GetEpochLastCommitted(rpcParameters RPC.RPCParameters, stake
 	return returnedValues[0].Interface().(uint32), nil
 }
 
-func (*UtilsStruct) GetEpochLastRevealed(rpcParameters RPC.RPCParameters, stakerId uint32) (uint32, error) {
+func (*UtilsStruct) GetEpochLastRevealed(rpcParameters rpc.RPCParameters, stakerId uint32) (uint32, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "GetEpochLastRevealed", stakerId)
 	if err != nil {
 		return 0, err
@@ -75,7 +75,7 @@ func (*UtilsStruct) GetEpochLastRevealed(rpcParameters RPC.RPCParameters, staker
 	return returnedValues[0].Interface().(uint32), nil
 }
 
-func (*UtilsStruct) ToAssign(rpcParameters RPC.RPCParameters) (uint16, error) {
+func (*UtilsStruct) ToAssign(rpcParameters rpc.RPCParameters) (uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "ToAssign")
 	if err != nil {
 		return 0, err
@@ -83,7 +83,7 @@ func (*UtilsStruct) ToAssign(rpcParameters RPC.RPCParameters) (uint16, error) {
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetSaltFromBlockchain(rpcParameters RPC.RPCParameters) ([32]byte, error) {
+func (*UtilsStruct) GetSaltFromBlockchain(rpcParameters rpc.RPCParameters) ([32]byte, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, VoteManagerInterface, "GetSaltFromBlockchain")
 	if err != nil {
 		return [32]byte{}, err

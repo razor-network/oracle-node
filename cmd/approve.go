@@ -3,14 +3,14 @@ package cmd
 
 import (
 	"github.com/ethereum/go-ethereum/common"
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 )
 
 //This function approves the transaction if the user has sufficient balance otherwise it fails the transaction
-func (*UtilsStruct) Approve(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error) {
+func (*UtilsStruct) Approve(rpcParameters rpc.RPCParameters, txnArgs types.TransactionOptions) (common.Hash, error) {
 	allowance, err := razorUtils.Allowance(rpcParameters, common.HexToAddress(txnArgs.Account.Address), common.HexToAddress(core.StakeManagerAddress))
 	if err != nil {
 		return core.NilHash, err

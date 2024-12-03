@@ -4,7 +4,7 @@ package mocks
 
 import (
 	big "math/big"
-	RPC "razor/RPC"
+	RPC "razor/rpc"
 
 	accounts "github.com/ethereum/go-ethereum/accounts"
 

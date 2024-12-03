@@ -6,12 +6,12 @@ import (
 	"errors"
 	"math/big"
 	"os"
-	"razor/RPC"
 	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,7 +29,7 @@ func (*UtilsStruct) GetCollectionManagerWithOpts(client *ethclient.Client) (*bin
 	return UtilsInterface.GetCollectionManager(client), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetNumCollections(rpcParameters RPC.RPCParameters) (uint16, error) {
+func (*UtilsStruct) GetNumCollections(rpcParameters rpc.RPCParameters) (uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetNumCollections")
 	if err != nil {
 		return 0, err
@@ -37,7 +37,7 @@ func (*UtilsStruct) GetNumCollections(rpcParameters RPC.RPCParameters) (uint16, 
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetNumJobs(rpcParameters RPC.RPCParameters) (uint16, error) {
+func (*UtilsStruct) GetNumJobs(rpcParameters rpc.RPCParameters) (uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetNumJobs")
 	if err != nil {
 		return 0, err
@@ -45,7 +45,7 @@ func (*UtilsStruct) GetNumJobs(rpcParameters RPC.RPCParameters) (uint16, error) 
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetJobs(rpcParameters RPC.RPCParameters) ([]bindings.StructsJob, error) {
+func (*UtilsStruct) GetJobs(rpcParameters rpc.RPCParameters) ([]bindings.StructsJob, error) {
 	var jobs []bindings.StructsJob
 	numJobs, err := UtilsInterface.GetNumJobs(rpcParameters)
 	if err != nil {
@@ -61,7 +61,7 @@ func (*UtilsStruct) GetJobs(rpcParameters RPC.RPCParameters) ([]bindings.Structs
 	return jobs, nil
 }
 
-func (*UtilsStruct) GetNumActiveCollections(rpcParameters RPC.RPCParameters) (uint16, error) {
+func (*UtilsStruct) GetNumActiveCollections(rpcParameters rpc.RPCParameters) (uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetNumActiveCollections")
 	if err != nil {
 		return 0, err
@@ -69,7 +69,7 @@ func (*UtilsStruct) GetNumActiveCollections(rpcParameters RPC.RPCParameters) (ui
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetAllCollections(rpcParameters RPC.RPCParameters) ([]bindings.StructsCollection, error) {
+func (*UtilsStruct) GetAllCollections(rpcParameters rpc.RPCParameters) ([]bindings.StructsCollection, error) {
 	var collections []bindings.StructsCollection
 	numCollections, err := UtilsInterface.GetNumCollections(rpcParameters)
 	if err != nil {
@@ -85,7 +85,7 @@ func (*UtilsStruct) GetAllCollections(rpcParameters RPC.RPCParameters) ([]bindin
 	return collections, nil
 }
 
-func (*UtilsStruct) GetCollection(rpcParameters RPC.RPCParameters, collectionId uint16) (bindings.StructsCollection, error) {
+func (*UtilsStruct) GetCollection(rpcParameters rpc.RPCParameters, collectionId uint16) (bindings.StructsCollection, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetCollection", collectionId)
 	if err != nil {
 		return bindings.StructsCollection{}, err
@@ -93,7 +93,7 @@ func (*UtilsStruct) GetCollection(rpcParameters RPC.RPCParameters, collectionId 
 	return returnedValues[0].Interface().(bindings.StructsCollection), nil
 }
 
-func (*UtilsStruct) GetActiveCollectionIds(rpcParameters RPC.RPCParameters) ([]uint16, error) {
+func (*UtilsStruct) GetActiveCollectionIds(rpcParameters rpc.RPCParameters) ([]uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetActiveCollections")
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (*UtilsStruct) GetActiveCollectionIds(rpcParameters RPC.RPCParameters) ([]u
 	return returnedValues[0].Interface().([]uint16), nil
 }
 
-func (*UtilsStruct) GetActiveStatus(rpcParameters RPC.RPCParameters, id uint16) (bool, error) {
+func (*UtilsStruct) GetActiveStatus(rpcParameters rpc.RPCParameters, id uint16) (bool, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetActiveStatus", id)
 	if err != nil {
 		return false, err
@@ -109,7 +109,7 @@ func (*UtilsStruct) GetActiveStatus(rpcParameters RPC.RPCParameters, id uint16) 
 	return returnedValues[0].Interface().(bool), nil
 }
 
-func (*UtilsStruct) GetAggregatedDataOfCollection(rpcParameters RPC.RPCParameters, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) GetAggregatedDataOfCollection(rpcParameters rpc.RPCParameters, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
 	activeCollection, err := UtilsInterface.GetActiveCollection(commitParams.CollectionsCache, collectionId)
 	if err != nil {
 		log.Error(err)
@@ -123,7 +123,7 @@ func (*UtilsStruct) GetAggregatedDataOfCollection(rpcParameters RPC.RPCParameter
 	return collectionData, nil
 }
 
-func (*UtilsStruct) Aggregate(rpcParameters RPC.RPCParameters, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) Aggregate(rpcParameters rpc.RPCParameters, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -190,7 +190,7 @@ func (*UtilsStruct) Aggregate(rpcParameters RPC.RPCParameters, previousEpoch uin
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
-func (*UtilsStruct) GetActiveJob(rpcParameters RPC.RPCParameters, jobId uint16) (bindings.StructsJob, error) {
+func (*UtilsStruct) GetActiveJob(rpcParameters rpc.RPCParameters, jobId uint16) (bindings.StructsJob, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "Jobs", jobId)
 	if err != nil {
 		return bindings.StructsJob{}, err
@@ -316,7 +316,7 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, commitParams
 	return MultiplyWithPower(datum, job.Power), err
 }
 
-func (*UtilsStruct) GetAssignedCollections(rpcParameters RPC.RPCParameters, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
+func (*UtilsStruct) GetAssignedCollections(rpcParameters rpc.RPCParameters, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
 	assignedCollections := make(map[int]bool)
 	var seqAllottedCollections []*big.Int
 	toAssign, err := UtilsInterface.ToAssign(rpcParameters)
@@ -331,7 +331,7 @@ func (*UtilsStruct) GetAssignedCollections(rpcParameters RPC.RPCParameters, numA
 	return assignedCollections, seqAllottedCollections, nil
 }
 
-func (*UtilsStruct) GetLeafIdOfACollection(rpcParameters RPC.RPCParameters, collectionId uint16) (uint16, error) {
+func (*UtilsStruct) GetLeafIdOfACollection(rpcParameters rpc.RPCParameters, collectionId uint16) (uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetLeafIdOfACollection", collectionId)
 	if err != nil {
 		return 0, err
@@ -339,7 +339,7 @@ func (*UtilsStruct) GetLeafIdOfACollection(rpcParameters RPC.RPCParameters, coll
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetCollectionIdFromIndex(rpcParameters RPC.RPCParameters, medianIndex uint16) (uint16, error) {
+func (*UtilsStruct) GetCollectionIdFromIndex(rpcParameters rpc.RPCParameters, medianIndex uint16) (uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetCollectionIdFromIndex", medianIndex)
 	if err != nil {
 		return 0, err
@@ -347,7 +347,7 @@ func (*UtilsStruct) GetCollectionIdFromIndex(rpcParameters RPC.RPCParameters, me
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetCollectionIdFromLeafId(rpcParameters RPC.RPCParameters, leafId uint16) (uint16, error) {
+func (*UtilsStruct) GetCollectionIdFromLeafId(rpcParameters rpc.RPCParameters, leafId uint16) (uint16, error) {
 	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetCollectionIdFromLeafId", leafId)
 	if err != nil {
 		return 0, err
@@ -453,7 +453,7 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(collection bindings.StructsCo
 }
 
 // InitJobsCache initializes the jobs cache with data fetched from the blockchain
-func InitJobsCache(rpcParameters RPC.RPCParameters, jobsCache *cache.JobsCache) error {
+func InitJobsCache(rpcParameters rpc.RPCParameters, jobsCache *cache.JobsCache) error {
 	jobsCache.Mu.Lock()
 	defer jobsCache.Mu.Unlock()
 
@@ -477,7 +477,7 @@ func InitJobsCache(rpcParameters RPC.RPCParameters, jobsCache *cache.JobsCache) 
 }
 
 // InitCollectionsCache initializes the collections cache with data fetched from the blockchain
-func InitCollectionsCache(rpcParameters RPC.RPCParameters, collectionsCache *cache.CollectionsCache) error {
+func InitCollectionsCache(rpcParameters rpc.RPCParameters, collectionsCache *cache.CollectionsCache) error {
 	collectionsCache.Mu.Lock()
 	defer collectionsCache.Mu.Unlock()
 

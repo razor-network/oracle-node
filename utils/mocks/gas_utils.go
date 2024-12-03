@@ -4,7 +4,7 @@ package mocks
 
 import (
 	big "math/big"
-	RPC "razor/RPC"
+	RPC "razor/rpc"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
 	mock "github.com/stretchr/testify/mock"

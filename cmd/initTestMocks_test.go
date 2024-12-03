@@ -14,10 +14,10 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
-	"razor/RPC"
 	"razor/cmd/mocks"
 	"razor/path"
 	pathPkgMocks "razor/path/mocks"
+	"razor/rpc"
 	"razor/utils"
 	utilsPkgMocks "razor/utils/mocks"
 	"strings"
@@ -181,12 +181,12 @@ func SetUpMockInterfaces() {
 var privateKey, _ = ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 var TxnOpts, _ = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000)) // Used any random big int for chain ID
 
-var rpcManager = RPC.RPCManager{
-	BestEndpoint: &RPC.RPCEndpoint{
+var rpcManager = rpc.RPCManager{
+	BestEndpoint: &rpc.RPCEndpoint{
 		Client: &ethclient.Client{},
 	},
 }
-var rpcParameters = RPC.RPCParameters{
+var rpcParameters = rpc.RPCParameters{
 	Ctx:        context.Background(),
 	RPCManager: &rpcManager,
 }
@@ -230,7 +230,7 @@ func TestInvokeFunctionWithRetryAttempts(t *testing.T) {
 			SetUpMockInterfaces()
 			retryUtilsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(4))
 
-			localRPCParameters := RPC.RPCParameters{
+			localRPCParameters := rpc.RPCParameters{
 				Ctx:        ctx,
 				RPCManager: &rpcManager,
 			}

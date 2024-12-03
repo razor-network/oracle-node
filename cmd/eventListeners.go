@@ -6,16 +6,16 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
-	"razor/RPC"
 	"razor/cache"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 	"strings"
 )
 
-func (*UtilsStruct) InitJobAndCollectionCache(rpcParameters RPC.RPCParameters) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error) {
+func (*UtilsStruct) InitJobAndCollectionCache(rpcParameters rpc.RPCParameters) (*cache.JobsCache, *cache.CollectionsCache, *big.Int, error) {
 	initAssetCacheBlock, err := clientUtils.GetLatestBlockWithRetry(rpcParameters)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
@@ -43,7 +43,7 @@ func (*UtilsStruct) InitJobAndCollectionCache(rpcParameters RPC.RPCParameters) (
 }
 
 // CheckForJobAndCollectionEvents checks for specific job and collections event that were emitted.
-func CheckForJobAndCollectionEvents(rpcParameters RPC.RPCParameters, commitParams *types.CommitParams) error {
+func CheckForJobAndCollectionEvents(rpcParameters rpc.RPCParameters, commitParams *types.CommitParams) error {
 	collectionManagerContractABI, err := abi.JSON(strings.NewReader(bindings.CollectionManagerMetaData.ABI))
 	if err != nil {
 		log.Errorf("Error in parsing collection manager contract ABI: %v", err)
@@ -72,7 +72,7 @@ func CheckForJobAndCollectionEvents(rpcParameters RPC.RPCParameters, commitParam
 }
 
 // processEvents fetches and processes logs for multiple event types.
-func processEvents(rpcParameters RPC.RPCParameters, contractABI abi.ABI, fromBlock, toBlock *big.Int, eventNames []string, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) (*big.Int, error) {
+func processEvents(rpcParameters rpc.RPCParameters, contractABI abi.ABI, fromBlock, toBlock *big.Int, eventNames []string, jobsCache *cache.JobsCache, collectionsCache *cache.CollectionsCache) (*big.Int, error) {
 	logs, err := getEventLogs(rpcParameters, fromBlock, toBlock)
 	if err != nil {
 		log.Errorf("Failed to fetch logs: %v", err)
@@ -112,7 +112,7 @@ func processEvents(rpcParameters RPC.RPCParameters, contractABI abi.ABI, fromBlo
 }
 
 // getEventLogs is a utility function to fetch the event logs
-func getEventLogs(rpcParameters RPC.RPCParameters, fromBlock *big.Int, toBlock *big.Int) ([]Types.Log, error) {
+func getEventLogs(rpcParameters rpc.RPCParameters, fromBlock *big.Int, toBlock *big.Int) ([]Types.Log, error) {
 	log.Debugf("Checking for events from block %v to block %v...", fromBlock, toBlock)
 
 	// Set up the query for filtering logs

@@ -4,7 +4,7 @@ package cmd
 import (
 	"encoding/json"
 	"os"
-	"razor/RPC"
+	"razor/rpc"
 	"razor/utils"
 	"strconv"
 	"strings"
@@ -40,7 +40,7 @@ func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
 }
 
 //This function provides the list of all collections with their name, power, ID etc.
-func (*UtilsStruct) GetCollectionList(rpcParameters RPC.RPCParameters) error {
+func (*UtilsStruct) GetCollectionList(rpcParameters rpc.RPCParameters) error {
 	collections, err := razorUtils.GetAllCollections(rpcParameters)
 	log.Debugf("GetCollectionList: Collections: %+v", collections)
 

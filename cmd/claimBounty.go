@@ -5,11 +5,11 @@ import (
 	"errors"
 	"math/big"
 	"os"
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -63,7 +63,7 @@ func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
 }
 
 //This function handles claimBounty by picking bountyid's from disputeData file and if there is any error it returns the error
-func (*UtilsStruct) HandleClaimBounty(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account) error {
+func (*UtilsStruct) HandleClaimBounty(rpcParameters rpc.RPCParameters, config types.Configurations, account types.Account) error {
 	disputeFilePath, err := pathUtils.GetDisputeDataFileName(account.Address)
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func (*UtilsStruct) HandleClaimBounty(rpcParameters RPC.RPCParameters, config ty
 }
 
 //This function allows the users who are bountyHunter to redeem their bounty in razor network
-func (*UtilsStruct) ClaimBounty(rpcParameters RPC.RPCParameters, config types.Configurations, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
+func (*UtilsStruct) ClaimBounty(rpcParameters rpc.RPCParameters, config types.Configurations, redeemBountyInput types.RedeemBountyInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		Account:         redeemBountyInput.Account,
 		ChainId:         core.ChainId,

@@ -2,10 +2,10 @@
 package cmd
 
 import (
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -75,7 +75,7 @@ func (*UtilsStruct) ExecuteDelegate(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the delegator to stake coins without setting up a node
-func (*UtilsStruct) Delegate(rpcParameters RPC.RPCParameters, txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
+func (*UtilsStruct) Delegate(rpcParameters rpc.RPCParameters, txnArgs types.TransactionOptions, stakerId uint32) (common.Hash, error) {
 	log.Infof("Delegating %g razors to Staker %d", utils.GetAmountInDecimal(txnArgs.Amount), stakerId)
 	txnArgs.ContractAddress = core.StakeManagerAddress
 	txnArgs.MethodName = "delegate"

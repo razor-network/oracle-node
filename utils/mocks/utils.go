@@ -4,7 +4,7 @@ package mocks
 
 import (
 	big "math/big"
-	RPC "razor/RPC"
+	RPC "razor/rpc"
 
 	bindings "razor/pkg/bindings"
 

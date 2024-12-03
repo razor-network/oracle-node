@@ -8,13 +8,13 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sirupsen/logrus"
-	"razor/RPC"
+	"razor/rpc"
 )
 
 // BlockMonitor monitors the latest block and handles stale blocks.
 type BlockMonitor struct {
 	client         *ethclient.Client
-	rpcManager     *RPC.RPCManager
+	rpcManager     *rpc.RPCManager
 	latestBlock    *types.Header
 	mu             sync.Mutex
 	checkInterval  time.Duration
@@ -22,7 +22,7 @@ type BlockMonitor struct {
 }
 
 // NewBlockMonitor initializes a BlockMonitor with RPC integration.
-func NewBlockMonitor(client *ethclient.Client, rpcManager *RPC.RPCManager, checkInterval, staleThreshold time.Duration) *BlockMonitor {
+func NewBlockMonitor(client *ethclient.Client, rpcManager *rpc.RPCManager, checkInterval, staleThreshold time.Duration) *BlockMonitor {
 	return &BlockMonitor{
 		client:         client,
 		rpcManager:     rpcManager,

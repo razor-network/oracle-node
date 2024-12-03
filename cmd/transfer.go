@@ -2,11 +2,11 @@
 package cmd
 
 import (
-	"razor/RPC"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/spf13/pflag"
@@ -76,7 +76,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 }
 
 //This function transfers the razors from your account to others account
-func (*UtilsStruct) Transfer(rpcParameters RPC.RPCParameters, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
+func (*UtilsStruct) Transfer(rpcParameters rpc.RPCParameters, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 

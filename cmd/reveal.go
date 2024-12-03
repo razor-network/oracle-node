@@ -4,10 +4,10 @@ package cmd
 import (
 	"errors"
 	"math/big"
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 	"strings"
 
@@ -17,7 +17,7 @@ import (
 )
 
 //This function checks for epoch last committed
-func (*UtilsStruct) CheckForLastCommitted(rpcParameters RPC.RPCParameters, staker bindings.StructsStaker, epoch uint32) error {
+func (*UtilsStruct) CheckForLastCommitted(rpcParameters rpc.RPCParameters, staker bindings.StructsStaker, epoch uint32) error {
 	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(rpcParameters, staker.Id)
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func (*UtilsStruct) CheckForLastCommitted(rpcParameters RPC.RPCParameters, stake
 }
 
 //This function checks if the state is reveal or not and then reveals the votes
-func (*UtilsStruct) Reveal(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitData types.CommitData, signature []byte) (common.Hash, error) {
+func (*UtilsStruct) Reveal(rpcParameters rpc.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitData types.CommitData, signature []byte) (common.Hash, error) {
 	if state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
@@ -118,7 +118,7 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 }
 
 //This function indexes the reveal events of current epoch
-func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(rpcParameters RPC.RPCParameters, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
+func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(rpcParameters rpc.RPCParameters, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
 	log.Debug("Fetching reveal events of current epoch...")
 	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(rpcParameters, blockNumber)
 	if err != nil {

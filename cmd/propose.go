@@ -6,10 +6,10 @@ import (
 	"errors"
 	"math"
 	"math/big"
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 	"sort"
 	"strings"
@@ -31,7 +31,7 @@ var globalProposedDataStruct types.ProposeFileData
 // Find iteration using salt as seed
 
 //This functions handles the propose state
-func (*UtilsStruct) Propose(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
+func (*UtilsStruct) Propose(rpcParameters rpc.RPCParameters, config types.Configurations, account types.Account, staker bindings.StructsStaker, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, rogueData types.Rogue) error {
 	if state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent); err != nil || state != 2 {
 		log.Error("Not propose state")
 		return err
@@ -194,7 +194,7 @@ func (*UtilsStruct) Propose(rpcParameters RPC.RPCParameters, config types.Config
 }
 
 //This function returns the biggest stake and Id of it
-func (*UtilsStruct) GetBiggestStakeAndId(rpcParameters RPC.RPCParameters, epoch uint32) (*big.Int, uint32, error) {
+func (*UtilsStruct) GetBiggestStakeAndId(rpcParameters rpc.RPCParameters, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(rpcParameters)
 	if err != nil {
 		return nil, 0, err
@@ -229,7 +229,7 @@ func (*UtilsStruct) GetBiggestStakeAndId(rpcParameters RPC.RPCParameters, epoch 
 	return biggestStake, biggestStakerId, nil
 }
 
-func (*UtilsStruct) GetIteration(rpcParameters RPC.RPCParameters, proposer types.ElectedProposer, bufferPercent int32) int {
+func (*UtilsStruct) GetIteration(rpcParameters rpc.RPCParameters, proposer types.ElectedProposer, bufferPercent int32) int {
 	stake, err := razorUtils.GetStakeSnapshot(rpcParameters, proposer.StakerId, proposer.Epoch)
 	if err != nil {
 		log.Error("Error in fetching influence of staker: ", err)
@@ -349,7 +349,7 @@ func pseudoRandomNumberGenerator(seed []byte, max uint32, blockHashes []byte) *b
 }
 
 //This function returns the sorted revealed values
-func (*UtilsStruct) GetSortedRevealedValues(rpcParameters RPC.RPCParameters, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
+func (*UtilsStruct) GetSortedRevealedValues(rpcParameters rpc.RPCParameters, blockNumber *big.Int, epoch uint32) (*types.RevealedDataMaps, error) {
 	log.Debugf("GetSortedRevealedValues: Calling IndexRevealEventsOfCurrentEpoch with arguments blockNumber = %s, epoch = %d", blockNumber, epoch)
 	assignedAsset, err := cmdUtils.IndexRevealEventsOfCurrentEpoch(rpcParameters, blockNumber, epoch)
 	if err != nil {
@@ -396,7 +396,7 @@ func (*UtilsStruct) GetSortedRevealedValues(rpcParameters RPC.RPCParameters, blo
 }
 
 //This function returns the medians, idsRevealedInThisEpoch and revealedDataMaps
-func (*UtilsStruct) MakeBlock(rpcParameters RPC.RPCParameters, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
+func (*UtilsStruct) MakeBlock(rpcParameters rpc.RPCParameters, blockNumber *big.Int, epoch uint32, rogueData types.Rogue) ([]*big.Int, []uint16, *types.RevealedDataMaps, error) {
 	log.Debugf("MakeBlock: Calling GetSortedRevealedValues with arguments blockNumber = %s, epoch = %d", blockNumber, epoch)
 	revealedDataMaps, err := cmdUtils.GetSortedRevealedValues(rpcParameters, blockNumber, epoch)
 	if err != nil {
@@ -456,7 +456,7 @@ func (*UtilsStruct) MakeBlock(rpcParameters RPC.RPCParameters, blockNumber *big.
 	return medians, idsRevealedInThisEpoch, revealedDataMaps, nil
 }
 
-func (*UtilsStruct) GetSmallestStakeAndId(rpcParameters RPC.RPCParameters, epoch uint32) (*big.Int, uint32, error) {
+func (*UtilsStruct) GetSmallestStakeAndId(rpcParameters rpc.RPCParameters, epoch uint32) (*big.Int, uint32, error) {
 	numberOfStakers, err := razorUtils.GetNumberOfStakers(rpcParameters)
 	if err != nil {
 		return nil, 0, err
@@ -480,7 +480,7 @@ func (*UtilsStruct) GetSmallestStakeAndId(rpcParameters RPC.RPCParameters, epoch
 	return smallestStake, smallestStakerId, nil
 }
 
-func (*UtilsStruct) BatchGetStakeSnapshotCalls(rpcParameters RPC.RPCParameters, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
+func (*UtilsStruct) BatchGetStakeSnapshotCalls(rpcParameters rpc.RPCParameters, epoch uint32, numberOfStakers uint32) ([]*big.Int, error) {
 	voteManagerABI, err := utils.ABIInterface.Parse(strings.NewReader(bindings.VoteManagerMetaData.ABI))
 	if err != nil {
 		log.Errorf("Error in parsed voteManager ABI: %v", err)

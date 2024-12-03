@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
-	"razor/RPC"
+	"razor/rpc"
 	"razor/utils"
 	"strconv"
 )
@@ -38,7 +38,7 @@ func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
 }
 
 //This function provides the list of all jobs
-func (*UtilsStruct) GetJobList(rpcParameters RPC.RPCParameters) error {
+func (*UtilsStruct) GetJobList(rpcParameters rpc.RPCParameters) error {
 	jobs, err := razorUtils.GetJobs(rpcParameters)
 	log.Debugf("JobList: Jobs: %+v", jobs)
 	if err != nil {

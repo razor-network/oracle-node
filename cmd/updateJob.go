@@ -2,10 +2,10 @@
 package cmd
 
 import (
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -71,7 +71,7 @@ func (*UtilsStruct) ExecuteUpdateJob(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the admin to update an existing job
-func (*UtilsStruct) UpdateJob(rpcParameters RPC.RPCParameters, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
+func (*UtilsStruct) UpdateJob(rpcParameters rpc.RPCParameters, config types.Configurations, jobInput types.CreateJobInput, jobId uint16) (common.Hash, error) {
 	_, err := cmdUtils.WaitIfCommitState(rpcParameters, "update job")
 	if err != nil {
 		log.Error("Error in fetching state")

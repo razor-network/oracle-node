@@ -2,10 +2,10 @@
 package cmd
 
 import (
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -68,7 +68,7 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the admin to create collction if existing jobs are present
-func (*UtilsStruct) CreateCollection(rpcParameters RPC.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
+func (*UtilsStruct) CreateCollection(rpcParameters rpc.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
 	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("CreateCollection: Uint16 jobIds: ", jobIds)
 	_, err := cmdUtils.WaitForAppropriateState(rpcParameters, "create collection", 4)

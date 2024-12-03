@@ -3,9 +3,9 @@ package cmd
 
 import (
 	"errors"
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
+	"razor/rpc"
 	"razor/utils"
 	"strings"
 
@@ -384,7 +384,7 @@ func setLogLevel(config types.Configurations) {
 	}
 }
 
-func ValidateBufferPercentLimit(rpcParameters RPC.RPCParameters, bufferPercent int32) error {
+func ValidateBufferPercentLimit(rpcParameters rpc.RPCParameters, bufferPercent int32) error {
 	stateBuffer, err := razorUtils.GetStateBuffer(rpcParameters)
 	if err != nil {
 		return err

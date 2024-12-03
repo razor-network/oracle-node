@@ -6,10 +6,10 @@ import (
 	"errors"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 	"sync"
 
@@ -21,7 +21,7 @@ import (
 GetSalt calculates the salt on the basis of previous epoch and the medians of the previous epoch.
 If the previous epoch doesn't contain any medians, then the value is fetched from the smart contract.
 */
-func (*UtilsStruct) GetSalt(rpcParameters RPC.RPCParameters, epoch uint32) ([32]byte, error) {
+func (*UtilsStruct) GetSalt(rpcParameters rpc.RPCParameters, epoch uint32) ([32]byte, error) {
 	previousEpoch := epoch - 1
 	log.Debug("GetSalt: Previous epoch: ", previousEpoch)
 	numProposedBlock, err := razorUtils.GetNumberOfProposedBlocks(rpcParameters, previousEpoch)
@@ -55,7 +55,7 @@ func (*UtilsStruct) GetSalt(rpcParameters RPC.RPCParameters, epoch uint32) ([32]
 HandleCommitState fetches the collections assigned to the staker and creates the leaves required for the merkle tree generation.
 Values for only the collections assigned to the staker is fetched for others, 0 is added to the leaves of tree.
 */
-func (*UtilsStruct) HandleCommitState(rpcParameters RPC.RPCParameters, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
+func (*UtilsStruct) HandleCommitState(rpcParameters rpc.RPCParameters, epoch uint32, seed []byte, commitParams *types.CommitParams, rogueData types.Rogue) (types.CommitData, error) {
 	numActiveCollections, err := razorUtils.GetNumActiveCollections(rpcParameters)
 	if err != nil {
 		return types.CommitData{}, err
@@ -145,7 +145,7 @@ func (*UtilsStruct) HandleCommitState(rpcParameters RPC.RPCParameters, epoch uin
 /*
 Commit finally commits the data to the smart contract. It calculates the commitment to send using the merkle tree root and the seed.
 */
-func (*UtilsStruct) Commit(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitmentToSend [32]byte) (common.Hash, error) {
+func (*UtilsStruct) Commit(rpcParameters rpc.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitmentToSend [32]byte) (common.Hash, error) {
 	if state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent); err != nil || state != 0 {
 		log.Error("Not commit state")
 		return core.NilHash, err
@@ -178,7 +178,7 @@ func (*UtilsStruct) Commit(rpcParameters RPC.RPCParameters, config types.Configu
 	return txnHash, nil
 }
 
-func CalculateSeed(rpcParameters RPC.RPCParameters, account types.Account, keystorePath string, epoch uint32) ([]byte, error) {
+func CalculateSeed(rpcParameters rpc.RPCParameters, account types.Account, keystorePath string, epoch uint32) ([]byte, error) {
 	log.Debugf("CalculateSeed: Calling CalculateSecret() with arguments epoch = %d, keystorePath = %s, chainId = %s", epoch, keystorePath, core.ChainId)
 	_, secret, err := cmdUtils.CalculateSecret(account, epoch, keystorePath, core.ChainId)
 	if err != nil {
@@ -213,7 +213,7 @@ func CalculateCommitment(seed []byte, values []*big.Int) ([32]byte, error) {
 	return commitmentToSend, nil
 }
 
-func VerifyCommitment(rpcParameters RPC.RPCParameters, account types.Account, commitmentFetched [32]byte) (bool, error) {
+func VerifyCommitment(rpcParameters rpc.RPCParameters, account types.Account, commitmentFetched [32]byte) (bool, error) {
 	commitmentStruct, err := razorUtils.GetCommitment(rpcParameters, account.Address)
 	if err != nil {
 		log.Error("Error in getting commitments: ", err)
@@ -229,7 +229,7 @@ func VerifyCommitment(rpcParameters RPC.RPCParameters, account types.Account, co
 	return false, nil
 }
 
-func GetCommittedDataForEpoch(rpcParameters RPC.RPCParameters, account types.Account, epoch uint32, rogueData types.Rogue) (types.CommitFileData, error) {
+func GetCommittedDataForEpoch(rpcParameters rpc.RPCParameters, account types.Account, epoch uint32, rogueData types.Rogue) (types.CommitFileData, error) {
 	// Attempt to fetch global commit data from memory if epoch matches
 	if globalCommitDataStruct.Epoch == epoch {
 		log.Debugf("Epoch in global commit data is equal to current epoch %v. Fetching commit data from memory!", epoch)

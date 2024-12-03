@@ -2,10 +2,10 @@
 package cmd
 
 import (
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -73,7 +73,7 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 }
 
 //This function allows the admin to create the job
-func (*UtilsStruct) CreateJob(rpcParameters RPC.RPCParameters, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
+func (*UtilsStruct) CreateJob(rpcParameters rpc.RPCParameters, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,

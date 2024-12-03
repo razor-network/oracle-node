@@ -4,10 +4,10 @@ package cmd
 import (
 	"errors"
 	"math/big"
-	"razor/RPC"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -49,7 +49,7 @@ func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
 }
 
 //This function handles the unstake lock
-func (*UtilsStruct) HandleUnstakeLock(rpcParameters RPC.RPCParameters, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
+func (*UtilsStruct) HandleUnstakeLock(rpcParameters rpc.RPCParameters, account types.Account, configurations types.Configurations, stakerId uint32) (common.Hash, error) {
 	unstakeLock, err := razorUtils.GetLock(rpcParameters, account.Address, stakerId, 0)
 	if err != nil {
 		log.Error("Error in fetching unstakeLock")
@@ -116,7 +116,7 @@ func (*UtilsStruct) HandleUnstakeLock(rpcParameters RPC.RPCParameters, account t
 }
 
 //This function initiate withdraw for your razors once you've unstaked
-func (*UtilsStruct) InitiateWithdraw(rpcParameters RPC.RPCParameters, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
+func (*UtilsStruct) InitiateWithdraw(rpcParameters rpc.RPCParameters, txnOpts *bind.TransactOpts, stakerId uint32) (common.Hash, error) {
 	log.Info("Initiating withdrawal of funds...")
 
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
