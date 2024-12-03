@@ -375,8 +375,6 @@ func setLogLevel(config types.Configurations) {
 		log.SetLogLevel(logrus.DebugLevel)
 	}
 
-	log.Debugf("Config details: %+v", config)
-
 	if razorUtils.IsFlagPassed("logFile") {
 		log.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)
 		log.Debugf("Log File Max Backups (max number of old log files to retain): %d", config.LogFileMaxBackups)

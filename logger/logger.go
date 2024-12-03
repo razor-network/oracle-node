@@ -65,8 +65,6 @@ func NewLogger(address string, client *ethclient.Client, blockMonitor *block.Blo
 		blockMonitor:   blockMonitor,
 	}
 
-	logger.logSystemInfo()
-
 	return logger
 }
 
@@ -90,19 +88,6 @@ func InitializeLogger(fileName string, config types.Configurations) {
 		globalLogger.LogrusInstance.SetOutput(mw)
 	}
 	globalLogger.LogrusInstance.Formatter = &logrus.JSONFormatter{}
-}
-
-// logSystemInfo logs system-related details at initialization.
-func (l *Logger) logSystemInfo() {
-	osInfo := goInfo.GetInfo()
-	l.LogrusInstance.WithFields(logrus.Fields{
-		"Operating System": osInfo.OS,
-		"Core":             osInfo.Core,
-		"Platform":         osInfo.Platform,
-		"CPUs":             osInfo.CPUs,
-		"razor-go version": core.VersionWithMeta,
-		"go version":       runtime.Version(),
-	}).Info("Logger initialized")
 }
 
 // Error logs a simple error message.
