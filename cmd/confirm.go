@@ -46,7 +46,10 @@ func (*UtilsStruct) ClaimBlockReward(rpcParameters rpc.RPCParameters, options ty
 
 	if selectedProposedBlock.ProposerId == stakerID {
 		log.Info("Claiming block reward...")
-		txnOpts := razorUtils.GetTxnOpts(rpcParameters, options)
+		txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, options)
+		if err != nil {
+			return core.NilHash, err
+		}
 
 		client, err := rpcParameters.RPCManager.GetBestRPCClient()
 		if err != nil {

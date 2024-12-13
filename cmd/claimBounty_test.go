@@ -157,6 +157,7 @@ func TestClaimBounty(t *testing.T) {
 		epochErr        error
 		bountyLock      types.BountyLock
 		bountyLockErr   error
+		txnOptsErr      error
 		redeemBountyTxn *Types.Transaction
 		redeemBountyErr error
 		hash            common.Hash
@@ -250,6 +251,19 @@ func TestClaimBounty(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: nil,
 		},
+		{
+			name: "Test 8: When there is an error in getting txnOpts",
+			args: args{
+				epoch: 70,
+				bountyLock: types.BountyLock{
+					Amount:      big.NewInt(1000),
+					RedeemAfter: 70,
+				},
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -267,7 +281,7 @@ func TestClaimBounty(t *testing.T) {
 			utilsMock.On("GetBountyLock", mock.Anything, mock.Anything).Return(tt.args.bountyLock, tt.args.bountyLockErr)
 			timeMock.On("Sleep", mock.AnythingOfType("time.Duration")).Return()
 			utilsMock.On("CalculateBlockTime", mock.AnythingOfType("*ethclient.Client")).Return(blockTime)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			stakeManagerMock.On("RedeemBounty", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.redeemBountyTxn, tt.args.redeemBountyErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			transactionUtilsMock.On("Hash", mock.Anything).Return(tt.args.hash)

@@ -20,6 +20,7 @@ func TestDelegate(t *testing.T) {
 
 	type args struct {
 		amount      *big.Int
+		txnOptsErr  error
 		delegateTxn *Types.Transaction
 		delegateErr error
 		hash        common.Hash
@@ -52,12 +53,21 @@ func TestDelegate(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("delegate error"),
 		},
+		{
+			name: "Test 3: When there is an error in getting txnOpts",
+			args: args{
+				amount:     big.NewInt(1000),
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			stakeManagerMock.On("Delegate", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.delegateTxn, tt.args.delegateErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 

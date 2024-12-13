@@ -163,7 +163,10 @@ func (*UtilsStruct) ClaimBounty(rpcParameters rpc.RPCParameters, config types.Co
 		return core.NilHash, nil
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {
 		return core.NilHash, err

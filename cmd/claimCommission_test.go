@@ -206,7 +206,7 @@ func TestClaimCommission(t *testing.T) {
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, nil)
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utilsMock.On("StakerInfo", mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)

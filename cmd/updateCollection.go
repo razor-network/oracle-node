@@ -74,7 +74,7 @@ func (*UtilsStruct) UpdateCollection(rpcParameters rpc.RPCParameters, config typ
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
@@ -83,6 +83,9 @@ func (*UtilsStruct) UpdateCollection(rpcParameters rpc.RPCParameters, config typ
 		ABI:             bindings.CollectionManagerMetaData.ABI,
 		Account:         collectionInput.Account,
 	})
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Info("Updating collection...")
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

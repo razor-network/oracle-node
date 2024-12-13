@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -13,6 +12,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -148,10 +149,10 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 		latestHeaderErr error
 	}
 	tests := []struct {
-		name          string
-		args          args
-		want          *bind.TransactOpts
-		expectedFatal bool
+		name    string
+		args    args
+		want    *bind.TransactOpts
+		wantErr bool
 	}{
 		{
 			name: "Test 1: When GetTxnOptions execute successfully",
@@ -161,19 +162,17 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOpts:  txnOpts,
 				gasLimit: 1,
 			},
-			want:          txnOpts,
-			expectedFatal: false,
+			want:    txnOpts,
+			wantErr: false,
 		},
 		{
 			name: "Test 2: When there is an error in getting private key as address is not present in keystore",
 			args: args{
-				address:  "0x77Baf83BAD5bee0F7F44d84669A50C35c57E3576",
-				nonce:    2,
-				txnOpts:  txnOpts,
-				gasLimit: 1,
+				address: "0x77Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				nonce:   2,
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 3: When the accountManager is nil",
@@ -183,8 +182,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOpts:  txnOpts,
 				gasLimit: 1,
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 4: When there is an error in getting nonce",
@@ -195,8 +194,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOpts:  txnOpts,
 				gasLimit: 1,
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 5: When there is an error in getting transactor",
@@ -207,8 +206,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOptsErr: errors.New("transactor error"),
 				gasLimit:   1,
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 6: When there is an error in getting gasLimit",
@@ -218,8 +217,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOpts:     txnOpts,
 				gasLimitErr: errors.New("gasLimit error"),
 			},
-			want:          txnOpts,
-			expectedFatal: false,
+			want:    txnOpts,
+			wantErr: false,
 		},
 		{
 			name: "Test 7: When there is an rpc error in getting gasLimit",
@@ -232,8 +231,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 					GasLimit: 500,
 				},
 			},
-			want:          txnOpts,
-			expectedFatal: false,
+			want:    txnOpts,
+			wantErr: false,
 		},
 		{
 			name: "Test 8: When there is an rpc error in getting gasLimit and than error in getting latest header",
@@ -247,8 +246,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				},
 				latestHeaderErr: errors.New("latest header error"),
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 	}
 
@@ -257,11 +256,6 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fatalOccurred := false
-
-			// Override log.ExitFunc to induce a panic for testing the fatal scenario
-			log.LogrusInstance.ExitFunc = func(int) { panic("log.Fatal called") }
-
 			var account types.Account
 			accountManager := accounts.NewAccountManager("test_accounts")
 			if tt.args.address != "" {
@@ -295,32 +289,13 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 			utilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
 			clientMock.On("GetLatestBlockWithRetry", mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
-			// Defer a function to recover from the panic and check if it matches the expectedFatal condition
-			defer func() {
-				if r := recover(); r != nil {
-					// A panic occurred, check if it was expected
-					if tt.expectedFatal {
-						// Panic (fatal) was expected and occurred, so this is correct
-						fatalOccurred = true
-					} else {
-						// Panic occurred but was not expected, fail the test
-						t.Errorf("Unexpected log.Fatal call")
-					}
-				} else {
-					// No panic occurred, check if it was expected
-					if tt.expectedFatal {
-						// Expected a fatal condition but it didn't occur, fail the test
-						t.Errorf("Expected log.Fatal call did not occur")
-					}
-				}
-			}()
-
-			got := utils.GetTxnOpts(rpcParameters, transactionData)
-			if !tt.expectedFatal && fatalOccurred {
-				t.Fatalf("Test exited due to an unexpected fatal condition")
+			got, err := utils.GetTxnOpts(rpcParameters, transactionData)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetTxnOpts() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if got != tt.want {
-				t.Errorf("GetTxnOpts() function, got = %v, want = %v", got, tt.want)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetTxnOpts() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

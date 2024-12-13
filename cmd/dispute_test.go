@@ -5,13 +5,14 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
 	"io/fs"
 	"math/big"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -91,7 +92,7 @@ func TestDispute(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetBlockManager", mock.AnythingOfType("*ethclient.Client")).Return(blockManager)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts, nil)
 			cmdUtilsMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 			cmdUtilsMock.On("GetCollectionIdPositionInBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.positionOfCollectionInBlock)
 			blockManagerMock.On("FinalizeDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.finalizeDisputeTxn, tt.args.finalizeDisputeErr)
@@ -529,7 +530,7 @@ func TestHandleDispute(t *testing.T) {
 				RevealedDataMaps:      tt.args.revealedDataMaps,
 			}, tt.args.mediansErr)
 			utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposedBlock, tt.args.proposedBlockErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts, nil)
 			blockManagerMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputeBiggestStakeTxn, tt.args.disputeBiggestStakeErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.Hash)
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
@@ -657,7 +658,7 @@ func TestGiveSorted(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(tt.args.waitForBlockCompletionErr)
 			utilsMock.On("GetOptions").Return(callOpts)
 			utilsMock.On("Disputes", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.disputesMapping, tt.args.disputesMappingErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts, nil)
 			blockManagerMock.On("GiveSorted", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.giveSorted, nil)
 			cmdUtilsMock.On("ResetDispute", mock.Anything, mock.Anything, mock.Anything)
 
@@ -958,7 +959,7 @@ func TestCheckDisputeForIds(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts, nil)
 			blockManagerMock.On("DisputeOnOrderOfIds", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeOnOrderOfIds, tt.args.DisputeOnOrderOfIdsErr)
 			gasUtilsMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.incrementedGasLimit, tt.args.incrementedGasLimitErr)
 			blockManagerMock.On("DisputeCollectionIdShouldBePresent", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.DisputeCollectionIdShouldBePresent, tt.args.DisputeCollectionIdShouldBePresentErr)
@@ -1193,7 +1194,7 @@ func BenchmarkHandleDispute(b *testing.B) {
 				cmdUtilsMock.On("GetBiggestStakeAndId", mock.Anything, mock.Anything).Return(big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)), uint32(2), nil)
 				cmdUtilsMock.On("GetLocalMediansData", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(proposedData, nil)
 				utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything).Return(proposedBlock, nil)
-				utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts)
+				utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts, nil)
 				blockManagerMock.On("DisputeBiggestStakeProposed", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(&Types.Transaction{}, nil)
 				transactionMock.On("Hash", mock.Anything).Return(common.BigToHash(big.NewInt(1)))
 				utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)

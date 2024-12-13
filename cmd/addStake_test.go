@@ -25,6 +25,7 @@ func TestStakeCoins(t *testing.T) {
 		txnArgs     types.TransactionOptions
 		epoch       uint32
 		getEpochErr error
+		txnOptsErr  error
 		stakeTxn    *Types.Transaction
 		stakeErr    error
 		hash        common.Hash
@@ -80,12 +81,25 @@ func TestStakeCoins(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("stake error"),
 		},
+		{
+			name: "Test 4: When there is an error in getting transaction options",
+			args: args{
+				txnArgs: types.TransactionOptions{
+					Amount: big.NewInt(1000),
+				},
+				epoch:       2,
+				getEpochErr: nil,
+				txnOptsErr:  errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.getEpochErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			stakeManagerMock.On("Stake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakeTxn, tt.args.stakeErr)
 

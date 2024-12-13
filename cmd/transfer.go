@@ -80,7 +80,7 @@ func (*UtilsStruct) Transfer(rpcParameters rpc.RPCParameters, config types.Confi
 	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.RAZORAddress,
@@ -89,6 +89,9 @@ func (*UtilsStruct) Transfer(rpcParameters rpc.RPCParameters, config types.Confi
 		ABI:             bindings.RAZORMetaData.ABI,
 		Account:         transferInput.Account,
 	})
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.Account.Address, transferInput.ToAddress)
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

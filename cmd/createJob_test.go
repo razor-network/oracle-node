@@ -20,6 +20,7 @@ func TestCreateJob(t *testing.T) {
 	var config types.Configurations
 
 	type args struct {
+		txnOptsErr   error
 		createJobTxn *Types.Transaction
 		createJobErr error
 		hash         common.Hash
@@ -49,12 +50,20 @@ func TestCreateJob(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("createJob error"),
 		},
+		{
+			name: "Test 3:  When there is an error in getting txnOpts",
+			args: args{
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			assetManagerMock.On("CreateJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createJobTxn, tt.args.createJobErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 

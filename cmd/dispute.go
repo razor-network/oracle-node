@@ -85,11 +85,15 @@ func (*UtilsStruct) HandleDispute(rpcParameters rpc.RPCParameters, config types.
 			log.Debug("Biggest Stake in proposed block: ", proposedBlock.BiggestStake)
 			log.Warn("PROPOSED BIGGEST STAKE DOES NOT MATCH WITH ACTUAL BIGGEST STAKE")
 			log.Info("Disputing BiggestStakeProposed...")
-			txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+			txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 				ChainId: core.ChainId,
 				Config:  config,
 				Account: account,
 			})
+			if err != nil {
+				log.Error(err)
+				continue
+			}
 
 			client, err := rpcParameters.RPCManager.GetBestRPCClient()
 			if err != nil {
@@ -277,7 +281,10 @@ func (*UtilsStruct) CheckDisputeForIds(rpcParameters rpc.RPCParameters, transact
 		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeOnOrderOfIds"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, index0, index1}
-		txnOpts := razorUtils.GetTxnOpts(rpcParameters, transactionOpts)
+		txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, transactionOpts)
+		if err != nil {
+			return nil, err
+		}
 
 		client, err := rpcParameters.RPCManager.GetBestRPCClient()
 		if err != nil {
@@ -295,7 +302,10 @@ func (*UtilsStruct) CheckDisputeForIds(rpcParameters rpc.RPCParameters, transact
 		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBePresent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, missingCollectionId}
-		txnOpts := razorUtils.GetTxnOpts(rpcParameters, transactionOpts)
+		txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, transactionOpts)
+		if err != nil {
+			return nil, err
+		}
 		gasLimit := txnOpts.GasLimit
 		incrementedGasLimit, err := gasUtils.IncreaseGasLimitValue(rpcParameters, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
@@ -319,7 +329,10 @@ func (*UtilsStruct) CheckDisputeForIds(rpcParameters rpc.RPCParameters, transact
 		transactionOpts.ABI = bindings.BlockManagerMetaData.ABI
 		transactionOpts.MethodName = "disputeCollectionIdShouldBeAbsent"
 		transactionOpts.Parameters = []interface{}{epoch, blockIndex, presentCollectionId, big.NewInt(int64(positionOfPresentValue))}
-		txnOpts := razorUtils.GetTxnOpts(rpcParameters, transactionOpts)
+		txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, transactionOpts)
+		if err != nil {
+			return nil, err
+		}
 		gasLimit := txnOpts.GasLimit
 		incrementedGasLimit, err := gasUtils.IncreaseGasLimitValue(rpcParameters, gasLimit, core.DisputeGasMultiplier)
 		if err != nil {
@@ -368,7 +381,10 @@ func (*UtilsStruct) Dispute(rpcParameters rpc.RPCParameters, config types.Config
 					end = end / 2
 				} else {
 					log.Error("Error in GiveSorted: ", err)
-					txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+					txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+					if err != nil {
+						return err
+					}
 					log.Debugf("Dispute: Calling CheckToDoResetDispute with arguments epoch = %d, sortedValues = %s", epoch, sortedValues)
 					cmdUtils.CheckToDoResetDispute(rpcParameters, txnOpts, epoch, sortedValues)
 					return err
@@ -397,7 +413,10 @@ func (*UtilsStruct) Dispute(rpcParameters rpc.RPCParameters, config types.Config
 	finalizeDisputeTxnArgs.MethodName = "finalizeDispute"
 	finalizeDisputeTxnArgs.ABI = bindings.BlockManagerMetaData.ABI
 	finalizeDisputeTxnArgs.Parameters = []interface{}{epoch, blockIndex, positionOfCollectionInBlock}
-	finalizeDisputeTxnOpts := razorUtils.GetTxnOpts(rpcParameters, finalizeDisputeTxnArgs)
+	finalizeDisputeTxnOpts, err := razorUtils.GetTxnOpts(rpcParameters, finalizeDisputeTxnArgs)
+	if err != nil {
+		return err
+	}
 
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {
@@ -437,7 +456,10 @@ func (*UtilsStruct) Dispute(rpcParameters rpc.RPCParameters, config types.Config
 	resetDisputeTxnArgs.MethodName = "resetDispute"
 	resetDisputeTxnArgs.ABI = bindings.BlockManagerMetaData.ABI
 	resetDisputeTxnArgs.Parameters = []interface{}{epoch}
-	resetDisputeTxnOpts := razorUtils.GetTxnOpts(rpcParameters, resetDisputeTxnArgs)
+	resetDisputeTxnOpts, err := razorUtils.GetTxnOpts(rpcParameters, resetDisputeTxnArgs)
+	if err != nil {
+		return err
+	}
 
 	cmdUtils.ResetDispute(rpcParameters, resetDisputeTxnOpts, epoch)
 
@@ -449,10 +471,14 @@ func GiveSorted(rpcParameters rpc.RPCParameters, txnArgs types.TransactionOption
 	if len(sortedValues) == 0 {
 		return errors.New("length of sortedValues is 0")
 	}
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		log.Error("Error in getting txnOpts: ", err)
+		return err
+	}
 	disputesMapping, err := razorUtils.Disputes(rpcParameters, epoch, common.HexToAddress(txnArgs.Account.Address))
 	if err != nil {
-		log.Error("Error in getting disputes mapping: ", disputesMapping)
+		log.Error("Error in getting disputes mapping: ", err)
 		return err
 	}
 	log.Debugf("GiveSorted: Disputes mapping: %+v", disputesMapping)

@@ -24,6 +24,7 @@ func TestModifyAssetStatus(t *testing.T) {
 		currentStatusErr    error
 		epoch               uint32
 		epochErr            error
+		txnOptsErr          error
 		SetCollectionStatus *Types.Transaction
 		SetAssetStatusErr   error
 		hash                common.Hash
@@ -91,13 +92,24 @@ func TestModifyAssetStatus(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("WaitForAppropriateState error"),
 		},
+		{
+			name: "Test 6: When there is an error in getting txnOpts",
+			args: args{
+				status:              true,
+				currentStatus:       false,
+				SetCollectionStatus: &Types.Transaction{},
+				txnOptsErr:          errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("GetActiveStatus", mock.Anything, mock.Anything).Return(tt.args.currentStatus, tt.args.currentStatusErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			assetManagerMock.On("SetCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)

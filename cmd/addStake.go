@@ -105,7 +105,10 @@ func (*UtilsStruct) StakeCoins(rpcParameters rpc.RPCParameters, txnArgs types.Tr
 	txnArgs.MethodName = "stake"
 	txnArgs.Parameters = []interface{}{epoch, txnArgs.Amount}
 	txnArgs.ABI = bindings.StakeManagerMetaData.ABI
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

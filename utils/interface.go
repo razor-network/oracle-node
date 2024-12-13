@@ -73,7 +73,7 @@ var GasInterface GasUtils
 
 type Utils interface {
 	MultiplyFloatAndBigInt(bigIntVal *big.Int, floatingVal float64) *big.Int
-	GetTxnOpts(rpcParameters rpc.RPCParameters, transactionData types.TransactionOptions) *bind.TransactOpts
+	GetTxnOpts(rpcParameters rpc.RPCParameters, transactionData types.TransactionOptions) (*bind.TransactOpts, error)
 	GetBlockManager(client *ethclient.Client) *bindings.BlockManager
 	GetOptions() bind.CallOpts
 	GetNumberOfProposedBlocks(rpcParameters rpc.RPCParameters, epoch uint32) (uint8, error)

@@ -99,6 +99,7 @@ func TestReveal(t *testing.T) {
 		merkleTree     [][][]byte
 		merkleTreeErr  error
 		treeRevealData bindings.StructsMerkleTree
+		txnOptsErr     error
 		revealTxn      *Types.Transaction
 		revealErr      error
 		hash           common.Hash
@@ -133,7 +134,7 @@ func TestReveal(t *testing.T) {
 			wantErr: errors.New("state error"),
 		},
 		{
-			name: "Test 6: When Reveal transaction fails",
+			name: "Test 3: When Reveal transaction fails",
 			args: args{
 				state:     1,
 				stateErr:  nil,
@@ -145,13 +146,23 @@ func TestReveal(t *testing.T) {
 			wantErr: errors.New("reveal error"),
 		},
 		{
-			name: "Test 7: When there is an error in getting merkle tree",
+			name: "Test 4: When there is an error in getting merkle tree",
 			args: args{
 				state:         1,
 				merkleTreeErr: errors.New("merkle tree error"),
 			},
 			want:    core.NilHash,
 			wantErr: errors.New("merkle tree error"),
+		},
+		{
+			name: "Test 5: When there is an error in getting txnOpts",
+			args: args{
+				state:      1,
+				stateErr:   nil,
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
 		},
 	}
 	for _, tt := range tests {
@@ -161,7 +172,7 @@ func TestReveal(t *testing.T) {
 			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 			merkleUtilsMock.On("CreateMerkle", mock.Anything).Return(tt.args.merkleTree, tt.args.merkleTreeErr)
 			cmdUtilsMock.On("GenerateTreeRevealData", mock.Anything, mock.Anything).Return(tt.args.treeRevealData)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts, tt.args.txnOptsErr)
 			voteManagerMock.On("Reveal", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32"), mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 

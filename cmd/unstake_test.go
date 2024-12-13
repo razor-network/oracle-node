@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/accounts"
 	"razor/core"
@@ -12,6 +11,8 @@ import (
 	"razor/pkg/bindings"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -36,6 +37,7 @@ func TestUnstake(t *testing.T) {
 		lockErr        error
 		state          uint32
 		stateErr       error
+		txnOptsErr     error
 		unstakeTxn     *Types.Transaction
 		unstakeErr     error
 		hash           common.Hash
@@ -116,6 +118,17 @@ func TestUnstake(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "Test 9: When there is an error in getting txnOpts",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				amount:     big.NewInt(1000),
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,7 +139,7 @@ func TestUnstake(t *testing.T) {
 			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.lock, tt.args.lockErr)
 			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			stakeManagerMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeTxn, tt.args.unstakeErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
@@ -327,9 +340,10 @@ func TestApproveUnstake(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 	type args struct {
-		txn    *Types.Transaction
-		txnErr error
-		hash   common.Hash
+		txnOptsErr error
+		txn        *Types.Transaction
+		txnErr     error
+		hash       common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -346,9 +360,17 @@ func TestApproveUnstake(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 1: When there is an error in getting transaction",
+			name: "Test 2: When there is an error in getting transaction",
 			args: args{
 				txnErr: errors.New("error in getting transaction"),
+			},
+			want:    core.NilHash,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting txnOpts",
+			args: args{
+				txnOptsErr: errors.New("txnOpts error"),
 			},
 			want:    core.NilHash,
 			wantErr: true,
@@ -358,7 +380,7 @@ func TestApproveUnstake(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts, tt.args.txnOptsErr)
 			stakeManagerMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.txnErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			ut := &UtilsStruct{}

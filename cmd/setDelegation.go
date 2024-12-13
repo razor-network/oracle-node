@@ -97,7 +97,11 @@ func (*UtilsStruct) SetDelegation(rpcParameters rpc.RPCParameters, config types.
 		return core.NilHash, nil
 	}
 	log.Infof("Setting delegation acceptance of Staker %d to %t", delegationInput.StakerId, delegationInput.Status)
-	setDelegationAcceptanceTxnOpts := razorUtils.GetTxnOpts(rpcParameters, txnOpts)
+	setDelegationAcceptanceTxnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnOpts)
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {
 		return core.NilHash, err

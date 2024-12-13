@@ -108,7 +108,10 @@ func (*UtilsStruct) Unstake(rpcParameters rpc.RPCParameters, config types.Config
 	}
 
 	txnArgs.Parameters = []interface{}{stakerId, txnArgs.Amount}
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Info("Unstaking coins")
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {
@@ -128,7 +131,10 @@ func (*UtilsStruct) Unstake(rpcParameters rpc.RPCParameters, config types.Config
 
 //This function approves the unstake
 func (*UtilsStruct) ApproveUnstake(rpcParameters rpc.RPCParameters, stakerTokenAddress common.Address, txnArgs types.TransactionOptions) (common.Hash, error) {
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {
 		return core.NilHash, err

@@ -51,7 +51,7 @@ func (*UtilsStruct) ExecuteExtendLock(flagSet *pflag.FlagSet) {
 
 //This function is used to reset the lock once the withdraw lock period is over
 func (*UtilsStruct) ResetUnstakeLock(rpcParameters rpc.RPCParameters, config types.Configurations, extendLockInput types.ExtendLockInput) (common.Hash, error) {
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
@@ -60,6 +60,9 @@ func (*UtilsStruct) ResetUnstakeLock(rpcParameters rpc.RPCParameters, config typ
 		ABI:             bindings.StakeManagerMetaData.ABI,
 		Account:         extendLockInput.Account,
 	})
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	log.Info("Extending lock...")
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()

@@ -140,7 +140,7 @@ func (*UtilsStruct) Propose(rpcParameters rpc.RPCParameters, config types.Config
 	log.Debugf("Propose: Iteration: %d Biggest Staker Id: %d", iteration, biggestStakerId)
 	log.Info("Proposing block...")
 
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.BlockManagerAddress,
@@ -149,6 +149,9 @@ func (*UtilsStruct) Propose(rpcParameters rpc.RPCParameters, config types.Config
 		Parameters:      []interface{}{epoch, ids, medians, big.NewInt(int64(iteration)), biggestStakerId},
 		Account:         account,
 	})
+	if err != nil {
+		return err
+	}
 
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

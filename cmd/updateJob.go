@@ -77,7 +77,7 @@ func (*UtilsStruct) UpdateJob(rpcParameters rpc.RPCParameters, config types.Conf
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnArgs := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+	txnArgs, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
@@ -86,6 +86,9 @@ func (*UtilsStruct) UpdateJob(rpcParameters rpc.RPCParameters, config types.Conf
 		ABI:             bindings.CollectionManagerMetaData.ABI,
 		Account:         jobInput.Account,
 	})
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Info("Updating Job...")
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

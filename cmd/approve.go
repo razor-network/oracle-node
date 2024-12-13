@@ -25,7 +25,10 @@ func (*UtilsStruct) Approve(rpcParameters rpc.RPCParameters, txnArgs types.Trans
 		txnArgs.MethodName = "approve"
 		txnArgs.ABI = bindings.RAZORMetaData.ABI
 		txnArgs.Parameters = []interface{}{common.HexToAddress(core.StakeManagerAddress), txnArgs.Amount}
-		txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+		txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+		if err != nil {
+			return core.NilHash, err
+		}
 
 		client, err := rpcParameters.RPCManager.GetBestRPCClient()
 		if err != nil {

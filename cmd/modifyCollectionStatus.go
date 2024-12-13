@@ -82,7 +82,10 @@ func (*UtilsStruct) ModifyCollectionStatus(rpcParameters rpc.RPCParameters, conf
 		Account:         modifyCollectionInput.Account,
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Infof("Changing active status of collection: %d from %t to %t", modifyCollectionInput.CollectionId, !modifyCollectionInput.Status, modifyCollectionInput.Status)
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
 	if err != nil {

@@ -151,7 +151,7 @@ func (*UtilsStruct) Commit(rpcParameters rpc.RPCParameters, config types.Configu
 		return core.NilHash, err
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
@@ -160,6 +160,9 @@ func (*UtilsStruct) Commit(rpcParameters rpc.RPCParameters, config types.Configu
 		Parameters:      []interface{}{epoch, commitmentToSend},
 		Account:         account,
 	})
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	log.Info("Commitment sent...")
 	client, err := rpcParameters.RPCManager.GetBestRPCClient()
