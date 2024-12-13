@@ -3,7 +3,6 @@ package utils
 import (
 	"errors"
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"math/big"
@@ -16,7 +15,6 @@ import (
 
 func TestBatchCall(t *testing.T) {
 	//Testing Batch call scenario for getting StakeSnapshot
-	var client *ethclient.Client
 
 	voteManagerABI, _ := abi.JSON(strings.NewReader(bindings.VoteManagerMetaData.ABI))
 	stakeManagerABI, _ := abi.JSON(strings.NewReader(bindings.StakeManagerMetaData.ABI))
@@ -185,7 +183,7 @@ func TestBatchCall(t *testing.T) {
 			clientMock.On("PerformBatchCall", mock.Anything, mock.Anything).Return(tt.args.performBatchCallErr)
 
 			c := ClientStruct{}
-			gotResults, err := c.BatchCall(client, tt.args.contractABI, tt.args.contractAddress, tt.args.methodName, arguments)
+			gotResults, err := c.BatchCall(rpcParameters, tt.args.contractABI, tt.args.contractAddress, tt.args.methodName, arguments)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BatchCall() error = %v, but wantErr bool is %v", err, tt.wantErr)
 				return

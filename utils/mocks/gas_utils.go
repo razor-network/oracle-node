@@ -3,13 +3,10 @@
 package mocks
 
 import (
-	context "context"
 	big "math/big"
+	RPC "razor/rpc"
 
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
-
-	ethclient "github.com/ethereum/go-ethereum/ethclient"
-
 	mock "github.com/stretchr/testify/mock"
 
 	types "razor/core/types"
@@ -20,23 +17,23 @@ type GasUtils struct {
 	mock.Mock
 }
 
-// GetGasLimit provides a mock function with given fields: ctx, transactionData, txnOpts
-func (_m *GasUtils) GetGasLimit(ctx context.Context, transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
-	ret := _m.Called(ctx, transactionData, txnOpts)
+// GetGasLimit provides a mock function with given fields: rpcParameters, transactionData, txnOpts
+func (_m *GasUtils) GetGasLimit(rpcParameters RPC.RPCParameters, transactionData types.TransactionOptions, txnOpts *bind.TransactOpts) (uint64, error) {
+	ret := _m.Called(rpcParameters, transactionData, txnOpts)
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, types.TransactionOptions, *bind.TransactOpts) (uint64, error)); ok {
-		return rf(ctx, transactionData, txnOpts)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, types.TransactionOptions, *bind.TransactOpts) (uint64, error)); ok {
+		return rf(rpcParameters, transactionData, txnOpts)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, types.TransactionOptions, *bind.TransactOpts) uint64); ok {
-		r0 = rf(ctx, transactionData, txnOpts)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, types.TransactionOptions, *bind.TransactOpts) uint64); ok {
+		r0 = rf(rpcParameters, transactionData, txnOpts)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, types.TransactionOptions, *bind.TransactOpts) error); ok {
-		r1 = rf(ctx, transactionData, txnOpts)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, types.TransactionOptions, *bind.TransactOpts) error); ok {
+		r1 = rf(rpcParameters, transactionData, txnOpts)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -44,13 +41,13 @@ func (_m *GasUtils) GetGasLimit(ctx context.Context, transactionData types.Trans
 	return r0, r1
 }
 
-// GetGasPrice provides a mock function with given fields: ctx, client, config
-func (_m *GasUtils) GetGasPrice(ctx context.Context, client *ethclient.Client, config types.Configurations) *big.Int {
-	ret := _m.Called(ctx, client, config)
+// GetGasPrice provides a mock function with given fields: rpcParameters, config
+func (_m *GasUtils) GetGasPrice(rpcParameters RPC.RPCParameters, config types.Configurations) *big.Int {
+	ret := _m.Called(rpcParameters, config)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, types.Configurations) *big.Int); ok {
-		r0 = rf(ctx, client, config)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, types.Configurations) *big.Int); ok {
+		r0 = rf(rpcParameters, config)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -60,23 +57,23 @@ func (_m *GasUtils) GetGasPrice(ctx context.Context, client *ethclient.Client, c
 	return r0
 }
 
-// IncreaseGasLimitValue provides a mock function with given fields: ctx, client, gasLimit, gasLimitMultiplier
-func (_m *GasUtils) IncreaseGasLimitValue(ctx context.Context, client *ethclient.Client, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
-	ret := _m.Called(ctx, client, gasLimit, gasLimitMultiplier)
+// IncreaseGasLimitValue provides a mock function with given fields: rpcParameters, gasLimit, gasLimitMultiplier
+func (_m *GasUtils) IncreaseGasLimitValue(rpcParameters RPC.RPCParameters, gasLimit uint64, gasLimitMultiplier float32) (uint64, error) {
+	ret := _m.Called(rpcParameters, gasLimit, gasLimitMultiplier)
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint64, float32) (uint64, error)); ok {
-		return rf(ctx, client, gasLimit, gasLimitMultiplier)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint64, float32) (uint64, error)); ok {
+		return rf(rpcParameters, gasLimit, gasLimitMultiplier)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *ethclient.Client, uint64, float32) uint64); ok {
-		r0 = rf(ctx, client, gasLimit, gasLimitMultiplier)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, uint64, float32) uint64); ok {
+		r0 = rf(rpcParameters, gasLimit, gasLimitMultiplier)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *ethclient.Client, uint64, float32) error); ok {
-		r1 = rf(ctx, client, gasLimit, gasLimitMultiplier)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, uint64, float32) error); ok {
+		r1 = rf(rpcParameters, gasLimit, gasLimitMultiplier)
 	} else {
 		r1 = ret.Error(1)
 	}

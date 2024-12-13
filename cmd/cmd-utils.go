@@ -4,19 +4,24 @@ package cmd
 import (
 	"context"
 	"errors"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
+	"razor/accounts"
+	"razor/block"
+	"razor/core"
+	"razor/core/types"
+	"razor/logger"
+	"razor/rpc"
 	"razor/utils"
 	"strconv"
 	"time"
 
 	"github.com/spf13/pflag"
-
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 //This function takes client as a parameter and returns the epoch and state
-func (*UtilsStruct) GetEpochAndState(ctx context.Context, client *ethclient.Client) (uint32, int64, error) {
-	epoch, err := razorUtils.GetEpoch(ctx, client)
+func (*UtilsStruct) GetEpochAndState(rpcParameter rpc.RPCParameters) (uint32, int64, error) {
+	epoch, err := razorUtils.GetEpoch(rpcParameter)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -24,16 +29,16 @@ func (*UtilsStruct) GetEpochAndState(ctx context.Context, client *ethclient.Clie
 	if err != nil {
 		return 0, 0, err
 	}
-	err = ValidateBufferPercentLimit(ctx, client, bufferPercent)
+	err = ValidateBufferPercentLimit(rpcParameter, bufferPercent)
 	if err != nil {
 		return 0, 0, err
 	}
-	latestHeader, err := clientUtils.GetLatestBlockWithRetry(ctx, client)
+	latestHeader, err := clientUtils.GetLatestBlockWithRetry(rpcParameter)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, 0, err
 	}
-	stateBuffer, err := razorUtils.GetStateBuffer(ctx, client)
+	stateBuffer, err := razorUtils.GetStateBuffer(rpcParameter)
 	if err != nil {
 		log.Error("Error in getting state buffer: ", err)
 		return 0, 0, err
@@ -48,10 +53,10 @@ func (*UtilsStruct) GetEpochAndState(ctx context.Context, client *ethclient.Clie
 }
 
 //This function waits for the appropriate states which are required
-func (*UtilsStruct) WaitForAppropriateState(ctx context.Context, client *ethclient.Client, action string, states ...int) (uint32, error) {
+func (*UtilsStruct) WaitForAppropriateState(rpcParameter rpc.RPCParameters, action string, states ...int) (uint32, error) {
 	statesAllowed := GetFormattedStateNames(states)
 	for {
-		epoch, state, err := cmdUtils.GetEpochAndState(ctx, client)
+		epoch, state, err := cmdUtils.GetEpochAndState(rpcParameter)
 		if err != nil {
 			log.Error("Error in fetching epoch and state: ", err)
 			return epoch, err
@@ -66,9 +71,9 @@ func (*UtilsStruct) WaitForAppropriateState(ctx context.Context, client *ethclie
 }
 
 //This function wait if the state is commit state
-func (*UtilsStruct) WaitIfCommitState(ctx context.Context, client *ethclient.Client, action string) (uint32, error) {
+func (*UtilsStruct) WaitIfCommitState(rpcParameter rpc.RPCParameters, action string) (uint32, error) {
 	for {
-		epoch, state, err := cmdUtils.GetEpochAndState(ctx, client)
+		epoch, state, err := cmdUtils.GetEpochAndState(rpcParameter)
 		if err != nil {
 			log.Error("Error in fetching epoch and state: ", err)
 			return epoch, err
@@ -123,4 +128,73 @@ func GetFormattedStateNames(states []int) string {
 		}
 	}
 	return statesAllowed
+}
+
+func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations, rpc.RPCParameters, types.Account, error) {
+	var (
+		account       types.Account
+		client        *ethclient.Client
+		rpcParameters rpc.RPCParameters
+		blockMonitor  *block.BlockMonitor
+	)
+
+	config, err := cmdUtils.GetConfigData()
+	if err != nil {
+		log.Error("Error in getting config: ", err)
+		return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+	}
+	log.Debugf("Config: %+v", config)
+
+	if razorUtils.IsFlagPassed("address") {
+		address, err := flagSetUtils.GetStringAddress(flagSet)
+		if err != nil {
+			log.Error("Error in getting address: ", err)
+			return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+		}
+		log.Debugf("Address: %v", address)
+
+		log.Debug("Getting password...")
+		password := razorUtils.AssignPassword(flagSet)
+
+		accountManager, err := razorUtils.AccountManagerForKeystore()
+		if err != nil {
+			log.Error("Error in getting accounts manager for keystore: ", err)
+			return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+		}
+
+		account = accounts.InitAccountStruct(address, password, accountManager)
+		err = razorUtils.CheckPassword(account)
+		if err != nil {
+			log.Error("Error in fetching private key from given password: ", err)
+			return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+		}
+	}
+
+	rpcManager, err := rpc.InitializeRPCManager(config.Provider)
+	if err != nil {
+		log.Error("Error in initializing RPC Manager: ", err)
+		return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+	}
+
+	rpcParameters = rpc.RPCParameters{
+		RPCManager: rpcManager,
+		Ctx:        context.Background(),
+	}
+
+	client, err = rpcManager.GetBestRPCClient()
+	if err != nil {
+		log.Error("Error in getting best RPC client: ", err)
+		return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+	}
+
+	// Initialize BlockMonitor with RPCManager
+	blockMonitor = block.NewBlockMonitor(client, rpcManager, core.BlockNumberInterval, core.StaleBlockNumberCheckInterval)
+	blockMonitor.Start()
+	log.Debug("Checking to assign log file...")
+	fileUtils.AssignLogFile(flagSet, config)
+
+	// Update Logger Instance
+	logger.UpdateLogger(account.Address, client, blockMonitor)
+
+	return config, rpcParameters, account, nil
 }

@@ -2,13 +2,11 @@
 package cmd
 
 import (
-	"context"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
-	"razor/logger"
+	"razor/rpc"
 	"razor/utils"
 	"strconv"
 )
@@ -30,39 +28,34 @@ func initialiseStakerInfo(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the GetStakerInfo function
 func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteStakerinfo: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-	logger.SetLoggerParameters(client, "")
+	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
 	utils.CheckError("Error in getting stakerId: ", err)
 	log.Debug("ExecuteStakerinfo: StakerId: ", stakerId)
 
 	log.Debug("ExecuteStakerinfo: Calling GetStakerInfo() with argument stakerId = ", stakerId)
-	err = cmdUtils.GetStakerInfo(context.Background(), client, stakerId)
+	err = cmdUtils.GetStakerInfo(rpcParameters, stakerId)
 	utils.CheckError("Error in getting staker info: ", err)
 
 }
 
 //This function provides the staker details like age, stake, maturity etc.
-func (*UtilsStruct) GetStakerInfo(ctx context.Context, client *ethclient.Client, stakerId uint32) error {
-	callOpts := razorUtils.GetOptions()
-	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
+func (*UtilsStruct) GetStakerInfo(rpcParameters rpc.RPCParameters, stakerId uint32) error {
+	stakerInfo, err := razorUtils.StakerInfo(rpcParameters, stakerId)
 	if err != nil {
 		return err
 	}
-	maturity, err := stakeManagerUtils.GetMaturity(client, &callOpts, stakerInfo.Age)
+	maturity, err := razorUtils.GetMaturity(rpcParameters, stakerInfo.Age)
 	if err != nil {
 		return err
 	}
-	epoch, err := razorUtils.GetEpoch(ctx, client)
+	epoch, err := razorUtils.GetEpoch(rpcParameters)
 	if err != nil {
 		return err
 	}
-	influence, err := razorUtils.GetInfluenceSnapshot(ctx, client, stakerId, epoch)
+	influence, err := razorUtils.GetInfluenceSnapshot(rpcParameters, stakerId, epoch)
 	if err != nil {
 		return err
 	}

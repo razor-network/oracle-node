@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"context"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -12,6 +11,7 @@ import (
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,22 +29,30 @@ func (*UtilsStruct) GetCollectionManagerWithOpts(client *ethclient.Client) (*bin
 	return UtilsInterface.GetCollectionManager(client), UtilsInterface.GetOptions()
 }
 
-func (*UtilsStruct) GetNumCollections(ctx context.Context, client *ethclient.Client) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetNumCollections", client)
+func (*UtilsStruct) GetNumCollections(rpcParameters rpc.RPCParameters) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetNumCollections")
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetJobs(ctx context.Context, client *ethclient.Client) ([]bindings.StructsJob, error) {
+func (*UtilsStruct) GetNumJobs(rpcParameters rpc.RPCParameters) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetNumJobs")
+	if err != nil {
+		return 0, err
+	}
+	return returnedValues[0].Interface().(uint16), nil
+}
+
+func (*UtilsStruct) GetJobs(rpcParameters rpc.RPCParameters) ([]bindings.StructsJob, error) {
 	var jobs []bindings.StructsJob
-	numJobs, err := AssetManagerInterface.GetNumJobs(client)
+	numJobs, err := UtilsInterface.GetNumJobs(rpcParameters)
 	if err != nil {
 		return nil, err
 	}
 	for i := 1; i <= int(numJobs); i++ {
-		job, err := UtilsInterface.GetActiveJob(ctx, client, uint16(i))
+		job, err := UtilsInterface.GetActiveJob(rpcParameters, uint16(i))
 		if err != nil {
 			return nil, err
 		}
@@ -53,22 +61,22 @@ func (*UtilsStruct) GetJobs(ctx context.Context, client *ethclient.Client) ([]bi
 	return jobs, nil
 }
 
-func (*UtilsStruct) GetNumActiveCollections(ctx context.Context, client *ethclient.Client) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetNumActiveCollections", client)
+func (*UtilsStruct) GetNumActiveCollections(rpcParameters rpc.RPCParameters) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetNumActiveCollections")
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetAllCollections(ctx context.Context, client *ethclient.Client) ([]bindings.StructsCollection, error) {
+func (*UtilsStruct) GetAllCollections(rpcParameters rpc.RPCParameters) ([]bindings.StructsCollection, error) {
 	var collections []bindings.StructsCollection
-	numCollections, err := UtilsInterface.GetNumCollections(ctx, client)
+	numCollections, err := UtilsInterface.GetNumCollections(rpcParameters)
 	if err != nil {
 		return nil, err
 	}
 	for i := 1; i <= int(numCollections); i++ {
-		collection, err := AssetManagerInterface.GetCollection(client, uint16(i))
+		collection, err := UtilsInterface.GetCollection(rpcParameters, uint16(i))
 		if err != nil {
 			return nil, err
 		}
@@ -77,37 +85,45 @@ func (*UtilsStruct) GetAllCollections(ctx context.Context, client *ethclient.Cli
 	return collections, nil
 }
 
-func (*UtilsStruct) GetCollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (bindings.StructsCollection, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetCollection", client, collectionId)
+func (*UtilsStruct) GetCollection(rpcParameters rpc.RPCParameters, collectionId uint16) (bindings.StructsCollection, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetCollection", collectionId)
 	if err != nil {
 		return bindings.StructsCollection{}, err
 	}
 	return returnedValues[0].Interface().(bindings.StructsCollection), nil
 }
 
-func (*UtilsStruct) GetActiveCollectionIds(ctx context.Context, client *ethclient.Client) ([]uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetActiveCollections", client)
+func (*UtilsStruct) GetActiveCollectionIds(rpcParameters rpc.RPCParameters) ([]uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetActiveCollections")
 	if err != nil {
 		return nil, err
 	}
 	return returnedValues[0].Interface().([]uint16), nil
 }
 
-func (*UtilsStruct) GetAggregatedDataOfCollection(ctx context.Context, client *ethclient.Client, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) GetActiveStatus(rpcParameters rpc.RPCParameters, id uint16) (bool, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetActiveStatus", id)
+	if err != nil {
+		return false, err
+	}
+	return returnedValues[0].Interface().(bool), nil
+}
+
+func (*UtilsStruct) GetAggregatedDataOfCollection(rpcParameters rpc.RPCParameters, collectionId uint16, epoch uint32, commitParams *types.CommitParams) (*big.Int, error) {
 	activeCollection, err := UtilsInterface.GetActiveCollection(commitParams.CollectionsCache, collectionId)
 	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
 	//Supply previous epoch to Aggregate in case if last reported value is required.
-	collectionData, aggregationError := UtilsInterface.Aggregate(ctx, client, epoch-1, activeCollection, commitParams)
+	collectionData, aggregationError := UtilsInterface.Aggregate(rpcParameters, epoch-1, activeCollection, commitParams)
 	if aggregationError != nil {
 		return nil, aggregationError
 	}
 	return collectionData, nil
 }
 
-func (*UtilsStruct) Aggregate(ctx context.Context, client *ethclient.Client, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
+func (*UtilsStruct) Aggregate(rpcParameters rpc.RPCParameters, previousEpoch uint32, collection bindings.StructsCollection, commitParams *types.CommitParams) (*big.Int, error) {
 	var jobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -136,7 +152,7 @@ func (*UtilsStruct) Aggregate(ctx context.Context, client *ethclient.Client, pre
 		}
 
 		// Overriding the jobs from contracts with official jobs present in asset.go
-		overrideJobs, overriddenJobIdsFromJSONfile := UtilsInterface.HandleOfficialJobsFromJSONFile(client, collection, dataString, commitParams)
+		overrideJobs, overriddenJobIdsFromJSONfile := UtilsInterface.HandleOfficialJobsFromJSONFile(collection, dataString, commitParams)
 		jobs = append(jobs, overrideJobs...)
 		overriddenJobIds = append(overriddenJobIds, overriddenJobIdsFromJSONfile...)
 
@@ -165,7 +181,7 @@ func (*UtilsStruct) Aggregate(ctx context.Context, client *ethclient.Client, pre
 	}
 	dataToCommit, weight := UtilsInterface.GetDataToCommitFromJobs(jobs, commitParams)
 	if len(dataToCommit) == 0 {
-		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(ctx, client, previousEpoch, collection.Id)
+		prevCommitmentData, err := UtilsInterface.FetchPreviousValue(rpcParameters, previousEpoch, collection.Id)
 		if err != nil {
 			return nil, err
 		}
@@ -174,8 +190,8 @@ func (*UtilsStruct) Aggregate(ctx context.Context, client *ethclient.Client, pre
 	return performAggregation(dataToCommit, weight, collection.AggregationMethod)
 }
 
-func (*UtilsStruct) GetActiveJob(ctx context.Context, client *ethclient.Client, jobId uint16) (bindings.StructsJob, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "Jobs", client, jobId)
+func (*UtilsStruct) GetActiveJob(rpcParameters rpc.RPCParameters, jobId uint16) (bindings.StructsJob, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "Jobs", jobId)
 	if err != nil {
 		return bindings.StructsJob{}, err
 	}
@@ -300,10 +316,10 @@ func (*UtilsStruct) GetDataToCommitFromJob(job bindings.StructsJob, commitParams
 	return MultiplyWithPower(datum, job.Power), err
 }
 
-func (*UtilsStruct) GetAssignedCollections(ctx context.Context, client *ethclient.Client, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
+func (*UtilsStruct) GetAssignedCollections(rpcParameters rpc.RPCParameters, numActiveCollections uint16, seed []byte) (map[int]bool, []*big.Int, error) {
 	assignedCollections := make(map[int]bool)
 	var seqAllottedCollections []*big.Int
-	toAssign, err := UtilsInterface.ToAssign(ctx, client)
+	toAssign, err := UtilsInterface.ToAssign(rpcParameters)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -315,24 +331,24 @@ func (*UtilsStruct) GetAssignedCollections(ctx context.Context, client *ethclien
 	return assignedCollections, seqAllottedCollections, nil
 }
 
-func (*UtilsStruct) GetLeafIdOfACollection(ctx context.Context, client *ethclient.Client, collectionId uint16) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetLeafIdOfACollection", client, collectionId)
+func (*UtilsStruct) GetLeafIdOfACollection(rpcParameters rpc.RPCParameters, collectionId uint16) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetLeafIdOfACollection", collectionId)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetCollectionIdFromIndex(ctx context.Context, client *ethclient.Client, medianIndex uint16) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetCollectionIdFromIndex", client, medianIndex)
+func (*UtilsStruct) GetCollectionIdFromIndex(rpcParameters rpc.RPCParameters, medianIndex uint16) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetCollectionIdFromIndex", medianIndex)
 	if err != nil {
 		return 0, err
 	}
 	return returnedValues[0].Interface().(uint16), nil
 }
 
-func (*UtilsStruct) GetCollectionIdFromLeafId(ctx context.Context, client *ethclient.Client, leafId uint16) (uint16, error) {
-	returnedValues, err := InvokeFunctionWithRetryAttempts(ctx, AssetManagerInterface, "GetCollectionIdFromLeafId", client, leafId)
+func (*UtilsStruct) GetCollectionIdFromLeafId(rpcParameters rpc.RPCParameters, leafId uint16) (uint16, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, AssetManagerInterface, "GetCollectionIdFromLeafId", leafId)
 	if err != nil {
 		return 0, err
 	}
@@ -390,7 +406,7 @@ func ConvertCustomJobToStructJob(customJob types.CustomJob) bindings.StructsJob 
 	}
 }
 
-func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16) {
+func (*UtilsStruct) HandleOfficialJobsFromJSONFile(collection bindings.StructsCollection, dataString string, commitParams *types.CommitParams) ([]bindings.StructsJob, []uint16) {
 	var overrideJobs []bindings.StructsJob
 	var overriddenJobIds []uint16
 
@@ -437,7 +453,7 @@ func (*UtilsStruct) HandleOfficialJobsFromJSONFile(client *ethclient.Client, col
 }
 
 // InitJobsCache initializes the jobs cache with data fetched from the blockchain
-func InitJobsCache(ctx context.Context, client *ethclient.Client, jobsCache *cache.JobsCache) error {
+func InitJobsCache(rpcParameters rpc.RPCParameters, jobsCache *cache.JobsCache) error {
 	jobsCache.Mu.Lock()
 	defer jobsCache.Mu.Unlock()
 
@@ -446,12 +462,12 @@ func InitJobsCache(ctx context.Context, client *ethclient.Client, jobsCache *cac
 		delete(jobsCache.Jobs, k)
 	}
 
-	numJobs, err := AssetManagerInterface.GetNumJobs(client)
+	numJobs, err := UtilsInterface.GetNumJobs(rpcParameters)
 	if err != nil {
 		return err
 	}
 	for i := 1; i <= int(numJobs); i++ {
-		job, err := UtilsInterface.GetActiveJob(ctx, client, uint16(i))
+		job, err := UtilsInterface.GetActiveJob(rpcParameters, uint16(i))
 		if err != nil {
 			return err
 		}
@@ -461,7 +477,7 @@ func InitJobsCache(ctx context.Context, client *ethclient.Client, jobsCache *cac
 }
 
 // InitCollectionsCache initializes the collections cache with data fetched from the blockchain
-func InitCollectionsCache(client *ethclient.Client, collectionsCache *cache.CollectionsCache) error {
+func InitCollectionsCache(rpcParameters rpc.RPCParameters, collectionsCache *cache.CollectionsCache) error {
 	collectionsCache.Mu.Lock()
 	defer collectionsCache.Mu.Unlock()
 
@@ -470,12 +486,12 @@ func InitCollectionsCache(client *ethclient.Client, collectionsCache *cache.Coll
 		delete(collectionsCache.Collections, k)
 	}
 
-	numCollections, err := AssetManagerInterface.GetNumCollections(client)
+	numCollections, err := UtilsInterface.GetNumCollections(rpcParameters)
 	if err != nil {
 		return err
 	}
 	for i := 1; i <= int(numCollections); i++ {
-		collection, err := AssetManagerInterface.GetCollection(client, uint16(i))
+		collection, err := UtilsInterface.GetCollection(rpcParameters, uint16(i))
 		if err != nil {
 			return err
 		}

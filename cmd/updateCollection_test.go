@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -17,7 +16,6 @@ import (
 )
 
 func TestUpdateCollection(t *testing.T) {
-	var client *ethclient.Client
 	var config types.Configurations
 	var WaitIfCommitStateStatus uint32
 	var jobIdUint16 []uint16
@@ -77,12 +75,12 @@ func TestUpdateCollection(t *testing.T) {
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(jobIdUint16)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
-			cmdUtilsMock.On("WaitIfCommitState", mock.Anything, mock.Anything, mock.Anything).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
+			cmdUtilsMock.On("WaitIfCommitState", mock.Anything, mock.Anything).Return(WaitIfCommitStateStatus, tt.args.waitIfCommitStateErr)
 			assetManagerMock.On("UpdateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.UpdateCollection(context.Background(), client, config, collectionInput, collectionId)
+			got, err := utils.UpdateCollection(rpcParameters, config, collectionInput, collectionId)
 
 			if got != tt.want {
 				t.Errorf("Txn hash for updateCollection function, got = %v, want = %v", got, tt.want)
@@ -267,14 +265,16 @@ func TestExecuteUpdateCollection(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -286,8 +286,8 @@ func TestExecuteUpdateCollection(t *testing.T) {
 			flagSetMock.On("GetUint32Aggregation", flagSet).Return(tt.args.aggregation, tt.args.aggregationErr)
 			flagSetMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("UpdateCollection", mock.Anything, mock.Anything, config, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("UpdateCollection", mock.Anything, config, mock.Anything, mock.Anything).Return(tt.args.updateCollectionTxn, tt.args.updateCollectionErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 			flagSetMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
 
 			utils := &UtilsStruct{}

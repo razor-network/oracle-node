@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -14,12 +13,10 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestCheckForLastCommitted(t *testing.T) {
-	var client *ethclient.Client
 	staker := bindings.StructsStaker{
 		Id: 1,
 	}
@@ -66,11 +63,11 @@ func TestCheckForLastCommitted(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetEpochLastCommitted", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
+			utilsMock.On("GetEpochLastCommitted", mock.Anything, mock.Anything).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
 
 			utils := &UtilsStruct{}
 
-			err := utils.CheckForLastCommitted(context.Background(), client, staker, tt.args.epoch)
+			err := utils.CheckForLastCommitted(rpcParameters, staker, tt.args.epoch)
 			if err == nil || tt.want == nil {
 				if err != tt.want {
 					t.Errorf("Error for CheckForLastCommitted function, got = %v, want %v", err, tt.want)
@@ -87,7 +84,6 @@ func TestCheckForLastCommitted(t *testing.T) {
 
 func TestReveal(t *testing.T) {
 	var (
-		client       *ethclient.Client
 		commitData   types.CommitData
 		signature    []byte
 		account      types.Account
@@ -171,7 +167,7 @@ func TestReveal(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.Reveal(context.Background(), client, config, account, epoch, latestHeader, stateBuffer, commitData, signature)
+			got, err := utils.Reveal(rpcParameters, config, account, epoch, latestHeader, stateBuffer, commitData, signature)
 			if got != tt.want {
 				t.Errorf("Txn hash for Reveal function, got = %v, want = %v", got, tt.want)
 			}
@@ -257,7 +253,6 @@ func TestGenerateTreeRevealData(t *testing.T) {
 
 func TestIndexRevealEventsOfCurrentEpoch(t *testing.T) {
 	var (
-		client      *ethclient.Client
 		blockNumber *big.Int
 		epoch       uint32
 	)
@@ -321,12 +316,12 @@ func TestIndexRevealEventsOfCurrentEpoch(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("EstimateBlockNumberAtEpochBeginning", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
-			clientUtilsMock.On("FilterLogsWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.logs, tt.args.logsErr)
+			utilsMock.On("EstimateBlockNumberAtEpochBeginning", mock.Anything, mock.Anything).Return(tt.args.fromBlock, tt.args.fromBlockErr)
+			clientUtilsMock.On("FilterLogsWithRetry", mock.Anything, mock.Anything).Return(tt.args.logs, tt.args.logsErr)
 			abiUtilsMock.On("Parse", mock.Anything).Return(tt.args.contractAbi, tt.args.contractAbiErr)
 			abiUtilsMock.On("Unpack", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.data, tt.args.unpackErr)
 			ut := &UtilsStruct{}
-			got, err := ut.IndexRevealEventsOfCurrentEpoch(context.Background(), client, blockNumber, epoch)
+			got, err := ut.IndexRevealEventsOfCurrentEpoch(rpcParameters, blockNumber, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("IndexRevealEventsOfCurrentEpoch() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
@@ -12,7 +10,6 @@ import (
 )
 
 func TestGetEpochAndState(t *testing.T) {
-	var client *ethclient.Client
 
 	type args struct {
 		epoch            uint32
@@ -131,14 +128,14 @@ func TestGetEpochAndState(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			cmdUtilsMock.On("GetBufferPercent").Return(tt.args.bufferPercent, tt.args.bufferPercentErr)
-			utilsMock.On("GetStateBuffer", mock.Anything, mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
+			utilsMock.On("GetStateBuffer", mock.Anything).Return(tt.args.stateBuffer, tt.args.stateBufferErr)
 			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
 
 			utils := &UtilsStruct{}
-			gotEpoch, gotState, err := utils.GetEpochAndState(context.Background(), client)
+			gotEpoch, gotState, err := utils.GetEpochAndState(rpcParameters)
 			if gotEpoch != tt.wantEpoch {
 				t.Errorf("GetEpochAndState() got epoch = %v, want %v", gotEpoch, tt.wantEpoch)
 			}
@@ -159,8 +156,6 @@ func TestGetEpochAndState(t *testing.T) {
 }
 
 func TestWaitForAppropriateState(t *testing.T) {
-	var client *ethclient.Client
-
 	type args struct {
 		epoch           uint32
 		state           int64
@@ -225,7 +220,7 @@ func TestWaitForAppropriateState(t *testing.T) {
 			cmdUtilsMock.On("GetEpochAndState", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.state, tt.args.epochOrStateErr)
 			timeMock.On("Sleep", mock.Anything).Return()
 			utils := &UtilsStruct{}
-			got, err := utils.WaitForAppropriateState(context.Background(), client, tt.args.action, tt.args.states)
+			got, err := utils.WaitForAppropriateState(rpcParameters, tt.args.action, tt.args.states)
 			if got != tt.want {
 				t.Errorf("WaitForAppropriateState() function, got = %v, want = %v", got, tt.want)
 			}
@@ -243,7 +238,6 @@ func TestWaitForAppropriateState(t *testing.T) {
 }
 
 func TestWaitIfCommitState(t *testing.T) {
-	var client *ethclient.Client
 	var action string
 
 	type args struct {
@@ -284,7 +278,7 @@ func TestWaitIfCommitState(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.WaitIfCommitState(context.Background(), client, action)
+			got, err := utils.WaitIfCommitState(rpcParameters, action)
 			if got != tt.want {
 				t.Errorf("WaitIfCommitState() function, got = %v, want = %v", got, tt.want)
 			}

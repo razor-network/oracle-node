@@ -2,16 +2,13 @@
 package cmd
 
 import (
-	"context"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
@@ -38,29 +35,8 @@ func initialiseCreateJob(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the CreateJob function
 func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteCreateJob: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-
-	logger.SetLoggerParameters(client, address)
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
+	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
@@ -90,16 +66,15 @@ func (*UtilsStruct) ExecuteCreateJob(flagSet *pflag.FlagSet) {
 		Account:      account,
 	}
 
-	txn, err := cmdUtils.CreateJob(client, config, jobInput)
+	txn, err := cmdUtils.CreateJob(rpcParameters, config, jobInput)
 	utils.CheckError("CreateJob error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
+	err = razorUtils.WaitForBlockCompletion(rpcParameters, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for createJob: ", err)
 }
 
 //This function allows the admin to create the job
-func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
+func (*UtilsStruct) CreateJob(rpcParameters rpc.RPCParameters, config types.Configurations, jobInput types.CreateJobInput) (common.Hash, error) {
 	txnArgs := types.TransactionOptions{
-		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
@@ -109,10 +84,16 @@ func (*UtilsStruct) CreateJob(client *ethclient.Client, config types.Configurati
 		Account:         jobInput.Account,
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(context.Background(), txnArgs)
+	txnOpts := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
 	log.Info("Creating Job...")
+
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	log.Debugf("CreateJob: Executing CreateJob transaction with weight = %d, power = %d, selector type = %d, name = %s, selector = %s, URl = %s", jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
-	txn, err := assetManagerUtils.CreateJob(txnArgs.Client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
+	txn, err := assetManagerUtils.CreateJob(client, txnOpts, jobInput.Weight, jobInput.Power, jobInput.SelectorType, jobInput.Name, jobInput.Selector, jobInput.Url)
 	if err != nil {
 		return core.NilHash, err
 	}

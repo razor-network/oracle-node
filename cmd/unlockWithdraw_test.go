@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"math/big"
 	"razor/accounts"
@@ -87,14 +86,16 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			flagSetMock.On("GetStringAddress", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.address, tt.args.addressErr)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
@@ -102,9 +103,9 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 			utilsMock.On("CheckPassword", mock.Anything).Return(nil)
 			utilsMock.On("AccountManagerForKeystore").Return(&accounts.AccountManager{}, nil)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			cmdUtilsMock.On("HandleWithdrawLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.err)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)
+			utilsMock.On("AssignStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			cmdUtilsMock.On("HandleWithdrawLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.err)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 			utils := &UtilsStruct{}
 			utils.ExecuteUnlockWithdraw(flagSet)
 			if fatal != tt.expectedFatal {
@@ -116,7 +117,6 @@ func TestExecuteUnlockWithdraw(t *testing.T) {
 
 func TestHandleWithdrawLock(t *testing.T) {
 	var (
-		client         *ethclient.Client
 		account        types.Account
 		configurations types.Configurations
 		stakerId       uint32
@@ -196,13 +196,13 @@ func TestHandleWithdrawLock(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawLock, tt.args.withdrawLockErr)
-			utilsMock.On("GetEpoch", mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.withdrawLock, tt.args.withdrawLockErr)
+			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts)
 			cmdUtilsMock.On("UnlockWithdraw", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unlockWithdraw, tt.args.unlockWithdrawErr)
 			utilsMock.On("SecondsToReadableTime", mock.AnythingOfType("int")).Return(tt.args.time)
 			ut := &UtilsStruct{}
-			got, err := ut.HandleWithdrawLock(context.Background(), client, account, configurations, stakerId)
+			got, err := ut.HandleWithdrawLock(rpcParameters, account, configurations, stakerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HandleWithdrawLock() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -216,7 +216,6 @@ func TestHandleWithdrawLock(t *testing.T) {
 
 func TestUnlockWithdraw(t *testing.T) {
 	var (
-		client   *ethclient.Client
 		txnOpts  *bind.TransactOpts
 		stakerId uint32
 	)
@@ -257,7 +256,7 @@ func TestUnlockWithdraw(t *testing.T) {
 			stakeManagerMock.On("UnlockWithdraw", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts"), mock.AnythingOfType("uint32")).Return(tt.args.txn, tt.args.txnErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			ut := &UtilsStruct{}
-			got, err := ut.UnlockWithdraw(client, txnOpts, stakerId)
+			got, err := ut.UnlockWithdraw(rpcParameters, txnOpts, stakerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UnlockWithdraw() error = %v, wantErr %v", err, tt.wantErr)
 				return

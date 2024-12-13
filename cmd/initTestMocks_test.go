@@ -8,12 +8,16 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"math/big"
+	"os"
+	"path/filepath"
 	"razor/cmd/mocks"
 	"razor/path"
 	pathPkgMocks "razor/path/mocks"
+	"razor/rpc"
 	"razor/utils"
 	utilsPkgMocks "razor/utils/mocks"
 	"strings"
@@ -168,6 +172,7 @@ func SetUpMockInterfaces() {
 
 	pathMock = new(pathPkgMocks.PathInterface)
 	pathUtils = pathMock
+	path.PathUtilsInterface = pathMock
 
 	osPathMock = new(pathPkgMocks.OSInterface)
 	path.OSUtilsInterface = osPathMock
@@ -175,6 +180,16 @@ func SetUpMockInterfaces() {
 
 var privateKey, _ = ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 var TxnOpts, _ = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31000)) // Used any random big int for chain ID
+
+var rpcManager = rpc.RPCManager{
+	BestEndpoint: &rpc.RPCEndpoint{
+		Client: &ethclient.Client{},
+	},
+}
+var rpcParameters = rpc.RPCParameters{
+	Ctx:        context.Background(),
+	RPCManager: &rpcManager,
+}
 
 func TestInvokeFunctionWithRetryAttempts(t *testing.T) {
 	tests := []struct {
@@ -215,7 +230,12 @@ func TestInvokeFunctionWithRetryAttempts(t *testing.T) {
 			SetUpMockInterfaces()
 			retryUtilsMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(4))
 
-			returnedValues, err := utils.InvokeFunctionWithRetryAttempts(ctx, dummyRPC, tt.methodName)
+			localRPCParameters := rpc.RPCParameters{
+				Ctx:        ctx,
+				RPCManager: &rpcManager,
+			}
+			returnedValues, err := utils.InvokeFunctionWithRetryAttempts(localRPCParameters, dummyRPC, tt.methodName)
+			fmt.Println("Error: ", err)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -236,14 +256,30 @@ func TestInvokeFunctionWithRetryAttempts(t *testing.T) {
 // Dummy interface with methods
 type DummyRPC struct{}
 
-// A fast method that simulates successful execution
-func (d *DummyRPC) FastMethod() error {
+// A fast method that simulates successful execution, added client as the parameter because generic retry functions expects client as the first parameter
+func (d *DummyRPC) FastMethod(client *ethclient.Client) error {
 	return nil
 }
 
-// A slow method that simulates a long-running process
-func (d *DummyRPC) SlowMethod() error {
+// A slow method that simulates a long-running process, added client as the parameter because generic retry functions expects client as the first parameter
+func (d *DummyRPC) SlowMethod(client *ethclient.Client) error {
 	fmt.Println("Sleeping...")
 	time.Sleep(3 * time.Second) // Simulate delay to trigger timeout
 	return nil
+}
+
+func setupTestEndpointsEnvironment() {
+	var testDir = "/tmp/test_rzr"
+	pathMock.On("GetDefaultPath").Return(testDir, nil)
+	err := os.MkdirAll(testDir, 0755)
+	if err != nil {
+		log.Fatalf("failed to create test directory: %s", err.Error())
+	}
+
+	mockEndpoints := `["https://testnet.skalenodes.com/v1/juicy-low-small-testnet"]`
+	mockFilePath := filepath.Join(testDir, "endpoints.json")
+	err = os.WriteFile(mockFilePath, []byte(mockEndpoints), 0644)
+	if err != nil {
+		log.Fatalf("failed to write mock endpoints.json: %s", err.Error())
+	}
 }

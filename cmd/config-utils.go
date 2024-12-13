@@ -2,15 +2,13 @@
 package cmd
 
 import (
-	"context"
 	"errors"
-	"razor/client"
 	"razor/core"
 	"razor/core/types"
+	"razor/rpc"
 	"razor/utils"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/viper"
@@ -20,7 +18,6 @@ import (
 func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:           "",
-		AlternateProvider:  "",
 		GasMultiplier:      0,
 		BufferPercent:      0,
 		WaitTime:           0,
@@ -34,10 +31,6 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	}
 
 	provider, err := cmdUtils.GetProvider()
-	if err != nil {
-		return config, err
-	}
-	alternateProvider, err := cmdUtils.GetAlternateProvider()
 	if err != nil {
 		return config, err
 	}
@@ -90,8 +83,6 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		return config, err
 	}
 	config.Provider = provider
-	config.AlternateProvider = alternateProvider
-	client.SetAlternateProvider(alternateProvider)
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime
@@ -170,19 +161,6 @@ func (*UtilsStruct) GetProvider() (string, error) {
 		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
 	}
 	return providerString, nil
-}
-
-//This function returns the alternate provider
-func (*UtilsStruct) GetAlternateProvider() (string, error) {
-	alternateProvider, err := getConfigValue("alternateProvider", "string", "", "alternateProvider")
-	if err != nil {
-		return "", err
-	}
-	alternateProviderString := alternateProvider.(string)
-	if !strings.HasPrefix(alternateProviderString, "https") {
-		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
-	}
-	return alternateProviderString, nil
 }
 
 //This function returns the multiplier
@@ -394,10 +372,8 @@ func (*UtilsStruct) GetLogFileMaxAge() (int, error) {
 //This function sets the log level
 func setLogLevel(config types.Configurations) {
 	if config.LogLevel == "debug" {
-		log.SetLevel(logrus.DebugLevel)
+		log.SetLogLevel(logrus.DebugLevel)
 	}
-
-	log.Debugf("Config details: %+v", config)
 
 	if razorUtils.IsFlagPassed("logFile") {
 		log.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)
@@ -406,8 +382,8 @@ func setLogLevel(config types.Configurations) {
 	}
 }
 
-func ValidateBufferPercentLimit(ctx context.Context, client *ethclient.Client, bufferPercent int32) error {
-	stateBuffer, err := razorUtils.GetStateBuffer(ctx, client)
+func ValidateBufferPercentLimit(rpcParameters rpc.RPCParameters, bufferPercent int32) error {
+	stateBuffer, err := razorUtils.GetStateBuffer(rpcParameters)
 	if err != nil {
 		return err
 	}

@@ -2,12 +2,9 @@
 package cmd
 
 import (
-	"context"
 	"math/big"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
 	"razor/utils"
 
@@ -29,44 +26,19 @@ Example:
 
 //This function allows the staker to claim the rewards earned from delegator's pool share as commission
 func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ClaimCommission: Config: %+v", config)
+	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-	log.Debug("ClaimCommission: Address: ", address)
-
-	logger.SetLoggerParameters(client, address)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
-
-	stakerId, err := razorUtils.GetStakerId(context.Background(), client, address)
+	stakerId, err := razorUtils.GetStakerId(rpcParameters, account.Address)
 	utils.CheckError("Error in getting stakerId: ", err)
 	log.Debug("ClaimCommission: Staker Id: ", stakerId)
-	callOpts := razorUtils.GetOptions()
 
-	stakerInfo, err := stakeManagerUtils.StakerInfo(client, &callOpts, stakerId)
+	stakerInfo, err := razorUtils.StakerInfo(rpcParameters, stakerId)
 	utils.CheckError("Error in getting stakerInfo: ", err)
 	log.Debugf("ClaimCommission: Staker Info: %+v", stakerInfo)
 
 	if stakerInfo.StakerReward.Cmp(big.NewInt(0)) > 0 {
-		txnOpts := razorUtils.GetTxnOpts(context.Background(), types.TransactionOptions{
-			Client:          client,
+		txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 			ChainId:         core.ChainId,
 			Config:          config,
 			ContractAddress: core.StakeManagerAddress,
@@ -78,13 +50,16 @@ func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
 
 		log.Info("Claiming commission...")
 
+		client, err := rpcParameters.RPCManager.GetBestRPCClient()
+		utils.CheckError("Error in getting best RPC client: ", err)
+
 		log.Debug("Executing ClaimStakeReward transaction...")
 		txn, err := stakeManagerUtils.ClaimStakerReward(client, txnOpts)
 		utils.CheckError("Error in claiming stake reward: ", err)
 
 		txnHash := transactionUtils.Hash(txn)
 		log.Info("Txn Hash: ", txnHash.Hex())
-		err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
+		err = razorUtils.WaitForBlockCompletion(rpcParameters, txnHash.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for claimCommission: ", err)
 	} else {
 		log.Error("no commission to claim")

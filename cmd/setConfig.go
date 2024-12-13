@@ -29,12 +29,11 @@ Example:
 
 // This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, types.Configurations{})
+	_, _, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	flagDetails := []types.FlagDetail{
 		{Name: "provider", Type: "string"},
-		{Name: "alternateProvider", Type: "string"},
 		{Name: "gasmultiplier", Type: "float32"},
 		{Name: "buffer", Type: "int32"},
 		{Name: "wait", Type: "int32"},
@@ -62,7 +61,6 @@ func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
 
 	configDetails := []types.ConfigDetail{
 		{FlagName: "provider", Key: "provider", DefaultValue: ""},
-		{FlagName: "alternateProvider", Key: "alternateProvider", DefaultValue: ""},
 		{FlagName: "gasmultiplier", Key: "gasmultiplier", DefaultValue: core.DefaultGasMultiplier},
 		{FlagName: "buffer", Key: "buffer", DefaultValue: core.DefaultBufferPercent},
 		{FlagName: "wait", Key: "wait", DefaultValue: core.DefaultWaitTime},
@@ -152,7 +150,6 @@ func init() {
 
 	var (
 		Provider           string
-		AlternateProvider  string
 		GasMultiplier      float32
 		BufferPercent      int32
 		WaitTime           int32
@@ -170,7 +167,6 @@ func init() {
 		LogFileMaxAge      int
 	)
 	setConfig.Flags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	setConfig.Flags().StringVarP(&AlternateProvider, "alternateProvider", "", "", "alternate provider name")
 	setConfig.Flags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	setConfig.Flags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	setConfig.Flags().Int32VarP(&WaitTime, "wait", "w", 0, "wait time (in secs)")

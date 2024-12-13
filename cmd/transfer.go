@@ -2,15 +2,12 @@
 package cmd
 
 import (
-	"context"
 	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
-
-	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/spf13/pflag"
 
@@ -35,19 +32,13 @@ func initialiseTransfer(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the Transfer function
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteTransfer: Config: %+v", config)
+	config, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
-	client := razorUtils.ConnectToClient(config.Provider)
+	log.Debugf("ExecuteTransfer: Config: %+v", config)
 
 	fromAddress, err := flagSetUtils.GetStringFrom(flagSet)
 	utils.CheckError("Error in getting fromAddress: ", err)
-
-	logger.SetLoggerParameters(client, fromAddress)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
 
 	log.Debug("Getting password...")
 	password := razorUtils.AssignPassword(flagSet)
@@ -63,7 +54,7 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 	toAddress, err := flagSetUtils.GetStringTo(flagSet)
 	utils.CheckError("Error in getting toAddress: ", err)
 
-	balance, err := razorUtils.FetchBalance(client, fromAddress)
+	balance, err := razorUtils.FetchBalance(rpcParameters, account.Address)
 	utils.CheckError("Error in fetching razor balance: ", err)
 
 	log.Debug("Getting amount in wei...")
@@ -77,20 +68,19 @@ func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
 		Account:    account,
 	}
 
-	txn, err := cmdUtils.Transfer(client, config, transferInput)
+	txn, err := cmdUtils.Transfer(rpcParameters, config, transferInput)
 	utils.CheckError("Transfer error: ", err)
 
-	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
+	err = razorUtils.WaitForBlockCompletion(rpcParameters, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for transfer: ", err)
 }
 
 //This function transfers the razors from your account to others account
-func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
+func (*UtilsStruct) Transfer(rpcParameters rpc.RPCParameters, config types.Configurations, transferInput types.TransferInput) (common.Hash, error) {
 	log.Debug("Checking for sufficient balance...")
 	razorUtils.CheckAmountAndBalance(transferInput.ValueInWei, transferInput.Balance)
 
-	txnOpts := razorUtils.GetTxnOpts(context.Background(), types.TransactionOptions{
-		Client:          client,
+	txnOpts := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.RAZORAddress,
@@ -100,6 +90,10 @@ func (*UtilsStruct) Transfer(client *ethclient.Client, config types.Configuratio
 		Account:         transferInput.Account,
 	})
 	log.Infof("Transferring %g tokens from %s to %s", utils.GetAmountInDecimal(transferInput.ValueInWei), transferInput.Account.Address, transferInput.ToAddress)
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
 
 	log.Debugf("Executing Transfer transaction with toAddress: %s, amount: %s", transferInput.ToAddress, transferInput.ValueInWei)
 	txn, err := tokenManagerUtils.Transfer(client, txnOpts, common.HexToAddress(transferInput.ToAddress), transferInput.ValueInWei)

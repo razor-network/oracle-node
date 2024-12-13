@@ -14,7 +14,6 @@ import (
 
 var (
 	Provider           string
-	AlternateProvider  string
 	GasMultiplier      float32
 	BufferPercent      int32
 	WaitTime           int32
@@ -30,7 +29,7 @@ var (
 	LogFileMaxAge      int
 )
 
-var log = logger.NewLogger()
+var log = logger.GetLogger()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -61,7 +60,6 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&Provider, "provider", "p", "", "provider name")
-	rootCmd.PersistentFlags().StringVarP(&AlternateProvider, "alternateProvider", "", "", "alternate provider name")
 	rootCmd.PersistentFlags().Float32VarP(&GasMultiplier, "gasmultiplier", "g", -1, "gas multiplier value")
 	rootCmd.PersistentFlags().Int32VarP(&BufferPercent, "buffer", "b", 0, "buffer percent")
 	rootCmd.PersistentFlags().Int32VarP(&WaitTime, "wait", "w", -1, "wait time")

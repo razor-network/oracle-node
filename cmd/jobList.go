@@ -2,13 +2,11 @@
 package cmd
 
 import (
-	"context"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"os"
-	"razor/logger"
+	"razor/rpc"
 	"razor/utils"
 	"strconv"
 )
@@ -31,21 +29,17 @@ func initialiseJobList(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the GetJobList function
 func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteJobList: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-	logger.SetLoggerParameters(client, "")
+	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("ExecuteJobList: Calling JobList()...")
-	err = cmdUtils.GetJobList(client)
+	err = cmdUtils.GetJobList(rpcParameters)
 	utils.CheckError("Error in getting job list: ", err)
 }
 
 //This function provides the list of all jobs
-func (*UtilsStruct) GetJobList(client *ethclient.Client) error {
-	jobs, err := razorUtils.GetJobs(context.Background(), client)
+func (*UtilsStruct) GetJobList(rpcParameters rpc.RPCParameters) error {
+	jobs, err := razorUtils.GetJobs(rpcParameters)
 	log.Debugf("JobList: Jobs: %+v", jobs)
 	if err != nil {
 		return err

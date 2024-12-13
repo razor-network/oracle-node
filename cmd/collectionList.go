@@ -2,15 +2,13 @@
 package cmd
 
 import (
-	"context"
 	"encoding/json"
 	"os"
-	"razor/logger"
+	"razor/rpc"
 	"razor/utils"
 	"strconv"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -33,21 +31,17 @@ func initialiseCollectionList(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and and executes the GetCollectionList function
 func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteCollectionList: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-	logger.SetLoggerParameters(client, "")
+	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("Calling GetCollectionList()")
-	err = cmdUtils.GetCollectionList(client)
+	err = cmdUtils.GetCollectionList(rpcParameters)
 	utils.CheckError("Error in getting collection list: ", err)
 }
 
 //This function provides the list of all collections with their name, power, ID etc.
-func (*UtilsStruct) GetCollectionList(client *ethclient.Client) error {
-	collections, err := razorUtils.GetAllCollections(context.Background(), client)
+func (*UtilsStruct) GetCollectionList(rpcParameters rpc.RPCParameters) error {
+	collections, err := razorUtils.GetAllCollections(rpcParameters)
 	log.Debugf("GetCollectionList: Collections: %+v", collections)
 
 	if err != nil {
