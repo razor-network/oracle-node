@@ -23,7 +23,6 @@ require (
 )
 
 require (
-	bou.ke/monkey v1.0.2 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/PaesslerAG/gval v1.2.3 // indirect
 	github.com/PuerkitoBio/goquery v1.10.0 // indirect
@@ -83,7 +82,6 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.14 // indirect
 	github.com/tklauser/numcpus v0.9.0 // indirect
-	github.com/undefinedlabs/go-mpatch v1.0.7 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
