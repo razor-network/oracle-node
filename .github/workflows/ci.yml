@@ -105,7 +105,7 @@ jobs:
           mv razor_go.linux-amd64.tar.gz ../../
 
       - name: Upload AMD Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: razor_go.linux-amd64.tar.gz
           path: razor_go.linux-amd64.tar.gz
@@ -147,7 +147,7 @@ jobs:
           mv razor_go.linux-arm64.tar.gz ../../
 
       - name: Upload ARM Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: razor_go.linux-arm64.tar.gz
           path: razor_go.linux-arm64.tar.gz
@@ -171,12 +171,12 @@ jobs:
           node-version: "20"
 
       - name: Download Artifacts AMD
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: razor_go.linux-amd64.tar.gz
 
       - name: Download Artifacts ARM
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: razor_go.linux-arm64.tar.gz
 
