@@ -114,8 +114,8 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 		}
 		log.Debug("Propose: Sorted proposed blocks: ", sortedProposedBlocks)
 
-		if len(sortedProposedBlocks) < int(numOfProposedBlocks) {
-			log.Errorf("Mismatch: numOfProposedBlocks (%d) is greater than sortedProposedBlocks length (%d)", numOfProposedBlocks, len(sortedProposedBlocks))
+		if numOfProposedBlocks <= 0 || len(sortedProposedBlocks) < int(numOfProposedBlocks) {
+			log.Errorf("Invalid numOfProposedBlocks (%d) or mismatch with sortedProposedBlocks length (%d)", numOfProposedBlocks, len(sortedProposedBlocks))
 			return errors.New("proposed blocks count mismatch")
 		}
 
