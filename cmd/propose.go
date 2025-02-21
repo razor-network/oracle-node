@@ -113,6 +113,12 @@ func (*UtilsStruct) Propose(client *ethclient.Client, config types.Configuration
 			return err
 		}
 		log.Debug("Propose: Sorted proposed blocks: ", sortedProposedBlocks)
+
+		if len(sortedProposedBlocks) < int(numOfProposedBlocks) {
+			log.Errorf("Mismatch: numOfProposedBlocks (%d) is greater than sortedProposedBlocks length (%d)", numOfProposedBlocks, len(sortedProposedBlocks))
+			return errors.New("proposed blocks count mismatch")
+		}
+
 		lastBlockIndex := sortedProposedBlocks[numOfProposedBlocks-1]
 		log.Debug("Propose: Last block index: ", lastBlockIndex)
 		lastProposedBlockStruct, err := razorUtils.GetProposedBlock(client, epoch, lastBlockIndex)
