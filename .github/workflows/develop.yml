@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
       - name: Setup Go
@@ -68,7 +68,7 @@ jobs:
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=coverage.txt -service=github
-      - uses: bissolli/gh-action-persist-workspace@v1
+      - uses: bissolli/gh-action-persist-workspace@v2
         with:
           action: persist
 
