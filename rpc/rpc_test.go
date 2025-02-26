@@ -106,15 +106,15 @@ func TestRPCManagerWithJSONRPC(t *testing.T) {
 	// Create three test servers:
 	// ts1: healthy with no artificial delay (using jsonRPCHandler which has block number 100 defined)
 	ts1 := httptest.NewServer(http.HandlerFunc(jsonRPCHandler))
-	defer ts1.Close()
+	t.Cleanup(func() { ts1.Close() })
 
 	// ts2: healthy but with a 200ms delay (using delayedJSONRPCHandler returning block 100)
 	ts2 := httptest.NewServer(delayedJSONRPCHandler(200*time.Millisecond, 100))
-	defer ts2.Close()
+	t.Cleanup(func() { ts2.Close() })
 
 	// ts3: unhealthy (using errorRPCHandler)
 	ts3 := httptest.NewServer(http.HandlerFunc(errorRPCHandler))
-	defer ts3.Close()
+	t.Cleanup(func() { ts3.Close() })
 
 	// Create an RPCManager with all three endpoints.
 	manager := createManagerFromServers(ts1, ts2, ts3)
@@ -151,7 +151,7 @@ func TestRPCManagerWithDelayedJSONRPC(t *testing.T) {
 	blockNumber := uint64(150)
 
 	ts := httptest.NewServer(delayedJSONRPCHandler(delay, blockNumber))
-	defer ts.Close()
+	t.Cleanup(func() { ts.Close() })
 
 	manager := &RPCManager{
 		Endpoints: []*RPCEndpoint{
@@ -191,13 +191,13 @@ func TestSwitchToNextBestClient(t *testing.T) {
 	t.Run("switches when best endpoint fails", func(t *testing.T) {
 		// Create three test servers with different block numbers.
 		ts1 := httptest.NewServer(makeHandler(100))
-		defer ts1.Close()
+		t.Cleanup(func() { ts1.Close() })
 
 		ts2 := httptest.NewServer(makeHandler(120))
 		// Do not defer ts2.Close() here to simulate its failure.
 
 		ts3 := httptest.NewServer(makeHandler(110))
-		defer ts3.Close()
+		t.Cleanup(func() { ts3.Close() })
 
 		manager := createManagerFromServers(ts1, ts2, ts3)
 
@@ -241,9 +241,9 @@ func TestSwitchToNextBestClient(t *testing.T) {
 		ts1 := httptest.NewServer(makeHandler(100))
 		ts2 := httptest.NewServer(makeHandler(120))
 		ts3 := httptest.NewServer(makeHandler(110))
-		defer ts1.Close()
-		defer ts2.Close()
-		defer ts3.Close()
+		t.Cleanup(func() { ts1.Close() })
+		t.Cleanup(func() { ts2.Close() })
+		t.Cleanup(func() { ts3.Close() })
 
 		manager := createManagerFromServers(ts1, ts2, ts3)
 
@@ -283,7 +283,7 @@ func TestSwitchToNextBestClient(t *testing.T) {
 
 	t.Run("returns false when only one endpoint is available", func(t *testing.T) {
 		ts1 := httptest.NewServer(makeHandler(120))
-		defer ts1.Close()
+		t.Cleanup(func() { ts1.Close() })
 
 		manager := createManagerFromServers(ts1)
 		if err := manager.RefreshEndpoints(); err != nil {
@@ -302,8 +302,8 @@ func TestSwitchToNextBestClient(t *testing.T) {
 	t.Run("returns error when current best client is not found in the list", func(t *testing.T) {
 		ts1 := httptest.NewServer(makeHandler(100))
 		ts2 := httptest.NewServer(makeHandler(120))
-		defer ts1.Close()
-		defer ts2.Close()
+		t.Cleanup(func() { ts1.Close() })
+		t.Cleanup(func() { ts2.Close() })
 
 		manager := createManagerFromServers(ts1, ts2)
 		if err := manager.RefreshEndpoints(); err != nil {
