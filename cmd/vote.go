@@ -144,6 +144,10 @@ func (*UtilsStruct) Vote(rpcParameters rpc.RPCParameters, blockMonitor *block.Bl
 		default:
 			log.Debugf("Vote: Header value: %d", header.Number)
 			latestHeader := blockMonitor.GetLatestBlock()
+			if latestHeader == nil {
+				log.Error("Block monitor returned nil header")
+				continue
+			}
 			log.Debugf("Vote: Latest header value: %d", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
