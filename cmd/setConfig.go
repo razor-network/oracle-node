@@ -29,7 +29,7 @@ Example:
 
 // This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
-	_, _, _, err := InitializeCommandDependencies(flagSet)
+	_, _, _, _, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	flagDetails := []types.FlagDetail{

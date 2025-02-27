@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"razor/block"
 	"razor/cache"
 	"razor/core"
 	"razor/core/types"
@@ -46,7 +47,7 @@ func initializeVote(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the Vote function
 func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, blockMonitor, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	err = ValidateBufferPercentLimit(rpcParameters, config.BufferPercent)
@@ -102,7 +103,7 @@ func (*UtilsStruct) ExecuteVote(flagSet *pflag.FlagSet) {
 	}
 
 	log.Debugf("Calling Vote() with arguments rogueData = %+v, account address = %s, backup node actions to ignore = %s", rogueData, account.Address, backupNodeActionsToIgnore)
-	if err := cmdUtils.Vote(rpcParameters, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore); err != nil {
+	if err := cmdUtils.Vote(rpcParameters, blockMonitor, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore); err != nil {
 		log.Errorf("%v\n", err)
 		osUtils.Exit(1)
 	}
@@ -133,20 +134,15 @@ func (*UtilsStruct) HandleExit() {
 }
 
 //This function handles all the states of voting
-func (*UtilsStruct) Vote(rpcParameters rpc.RPCParameters, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
-	header, err := clientUtils.GetLatestBlockWithRetry(rpcParameters)
-	utils.CheckError("Error in getting block: ", err)
+func (*UtilsStruct) Vote(rpcParameters rpc.RPCParameters, blockMonitor *block.BlockMonitor, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+	header := blockMonitor.GetLatestBlock()
 	for {
 		select {
 		case <-rpcParameters.Ctx.Done():
 			return nil
 		default:
 			log.Debugf("Vote: Header value: %d", header.Number)
-			latestHeader, err := clientUtils.GetLatestBlockWithRetry(rpcParameters)
-			if err != nil {
-				log.Error("Error in fetching block: ", err)
-				continue
-			}
+			latestHeader := blockMonitor.GetLatestBlock()
 			log.Debugf("Vote: Latest header value: %d", latestHeader.Number)
 			if latestHeader.Number.Cmp(header.Number) != 0 {
 				header = latestHeader
