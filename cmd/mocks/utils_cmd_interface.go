@@ -4,6 +4,7 @@ package mocks
 
 import (
 	big "math/big"
+	"razor/block"
 	RPC "razor/rpc"
 
 	accounts "github.com/ethereum/go-ethereum/accounts"
@@ -1853,12 +1854,12 @@ func (_m *UtilsCmdInterface) UpdateJob(rpcParameters RPC.RPCParameters, config t
 }
 
 // Vote provides a mock function with given fields: rpcParameters, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore
-func (_m *UtilsCmdInterface) Vote(rpcParameters RPC.RPCParameters, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
-	ret := _m.Called(rpcParameters, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
+func (_m *UtilsCmdInterface) Vote(rpcParameters RPC.RPCParameters, blockMonitor *block.BlockMonitor, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
+	ret := _m.Called(rpcParameters, blockMonitor, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, types.Configurations, types.Account, uint32, *types.CommitParams, types.Rogue, []string) error); ok {
-		r0 = rf(rpcParameters, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *block.BlockMonitor, types.Configurations, types.Account, uint32, *types.CommitParams, types.Rogue, []string) error); ok {
+		r0 = rf(rpcParameters, blockMonitor, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"os"
 	"path"
 	"path/filepath"
 	"razor/accounts"
+	"razor/block"
 	"razor/cache"
 	"razor/core/types"
 	"razor/pkg/bindings"
@@ -16,9 +18,6 @@ import (
 	"razor/utils"
 	"reflect"
 	"testing"
-	"time"
-
-	Types "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -176,7 +175,7 @@ func TestExecuteVote(t *testing.T) {
 			flagSetMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
 			cmdUtilsMock.On("InitJobAndCollectionCache", mock.Anything).Return(&cache.JobsCache{}, &cache.CollectionsCache{}, big.NewInt(100), nil)
 			cmdUtilsMock.On("HandleExit").Return()
-			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
+			cmdUtilsMock.On("Vote", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.voteErr)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
 
 			utils := &UtilsStruct{}
@@ -1338,11 +1337,8 @@ func TestVote(t *testing.T) {
 			errChan := make(chan error)
 			// Run Vote function in a goroutine
 			go func() {
-				errChan <- ut.Vote(localRpcParameters, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
+				errChan <- ut.Vote(localRpcParameters, &block.BlockMonitor{}, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 			}()
-
-			// Wait for some time to allow Vote function to execute
-			time.Sleep(time.Second * 2)
 
 			// Cancel the context to simulate its done
 			cancel()

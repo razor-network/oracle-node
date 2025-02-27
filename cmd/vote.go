@@ -135,7 +135,8 @@ func (*UtilsStruct) HandleExit() {
 
 //This function handles all the states of voting
 func (*UtilsStruct) Vote(rpcParameters rpc.RPCParameters, blockMonitor *block.BlockMonitor, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error {
-	header := blockMonitor.GetLatestBlock()
+	header, err := clientUtils.GetLatestBlockWithRetry(rpcParameters)
+	utils.CheckError("Error in getting block: ", err)
 	for {
 		select {
 		case <-rpcParameters.Ctx.Done():
