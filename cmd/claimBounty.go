@@ -34,7 +34,7 @@ func initialiseClaimBounty(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ClaimBounty function
 func (*UtilsStruct) ExecuteClaimBounty(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	if razorUtils.IsFlagPassed("bountyId") {
