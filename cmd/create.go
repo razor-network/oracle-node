@@ -28,8 +28,10 @@ func initialiseCreate(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the Create function
 func (*UtilsStruct) ExecuteCreate(flagSet *pflag.FlagSet) {
-	_, _, _, _, err := InitializeCommandDependencies(flagSet)
-	utils.CheckError("Error in initialising command dependencies: ", err)
+	config, err := cmdUtils.GetConfigData()
+	utils.CheckError("Error in getting config: ", err)
+	log.Debug("Checking to assign log file...")
+	fileUtils.AssignLogFile(flagSet, config)
 	log.Info("The password should be of minimum 8 characters containing least 1 uppercase, lowercase, digit and special character.")
 	password := razorUtils.AssignPassword(flagSet)
 	log.Debug("ExecuteCreate: Calling Create() with argument as input password")
