@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -13,6 +14,7 @@ import (
 	"razor/path"
 	pathMocks "razor/path/mocks"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils/mocks"
 	"reflect"
 	"regexp"
@@ -25,9 +27,19 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+var rpcManager = rpc.RPCManager{
+	BestEndpoint: &rpc.RPCEndpoint{
+		Client: &ethclient.Client{},
+	},
+}
+
+var rpcParameters = rpc.RPCParameters{
+	Ctx:        context.Background(),
+	RPCManager: &rpcManager,
+}
+
 func TestAggregate(t *testing.T) {
 	var (
-		client        *ethclient.Client
 		previousEpoch uint32
 		fileInfo      fs.FileInfo
 	)
@@ -199,14 +211,14 @@ func TestAggregate(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetDataToCommitFromJobs", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.dataToCommit, tt.args.weight, tt.args.dataToCommitErr)
-			utilsMock.On("FetchPreviousValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
+			utilsMock.On("FetchPreviousValue", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.prevCommitmentData, tt.args.prevCommitmentDataErr)
 			pathUtilsMock.On("GetJobFilePath").Return(tt.args.assetFilePath, tt.args.assetFilePathErr)
 			osUtilsMock.On("Stat", mock.Anything).Return(fileInfo, tt.args.statErr)
 			osUtilsMock.On("Open", mock.Anything).Return(tt.args.jsonFile, tt.args.jsonFileErr)
 			ioMock.On("ReadAll", mock.Anything).Return(tt.args.fileData, tt.args.fileDataErr)
-			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
+			utilsMock.On("HandleOfficialJobsFromJSONFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.overrrideJobs, tt.args.overrideJobIds)
 
-			got, err := utils.Aggregate(client, previousEpoch, tt.args.collection, commitParams)
+			got, err := utils.Aggregate(rpcParameters, previousEpoch, tt.args.collection, commitParams)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Aggregate() error = %v, wantErr %v", err, tt.wantErr)
@@ -220,7 +232,6 @@ func TestAggregate(t *testing.T) {
 }
 
 func TestGetActiveCollectionIds(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 
 	type args struct {
@@ -267,7 +278,7 @@ func TestGetActiveCollectionIds(t *testing.T) {
 			assetManagerMock.On("GetActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.activeAssetIds, tt.args.activeAssetIdsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetActiveCollectionIds(client)
+			got, err := utils.GetActiveCollectionIds(rpcParameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetActiveCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -347,7 +358,6 @@ func TestGetActiveCollection(t *testing.T) {
 }
 
 func TestGetActiveJob(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 	var jobId uint16
 
@@ -400,7 +410,7 @@ func TestGetActiveJob(t *testing.T) {
 			assetManagerMock.On("Jobs", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.job, tt.args.jobErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetActiveJob(client, jobId)
+			got, err := utils.GetActiveJob(rpcParameters, jobId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetActiveJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -413,7 +423,6 @@ func TestGetActiveJob(t *testing.T) {
 }
 
 func TestGetCollection(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 	var collectionId uint16
 
@@ -461,7 +470,7 @@ func TestGetCollection(t *testing.T) {
 			assetManagerMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.asset, tt.args.assetErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetCollection(client, collectionId)
+			got, err := utils.GetCollection(rpcParameters, collectionId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -474,8 +483,6 @@ func TestGetCollection(t *testing.T) {
 }
 
 func TestGetAllCollections(t *testing.T) {
-	var client *ethclient.Client
-
 	collectionListArray := []bindings.StructsCollection{
 		{
 			Active:            true,
@@ -543,10 +550,10 @@ func TestGetAllCollections(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			utilsMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numAssets, tt.args.numAssetsErr)
-			assetMock.On("GetCollection", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
+			utilsMock.On("GetNumCollections", mock.Anything).Return(tt.args.numAssets, tt.args.numAssetsErr)
+			utilsMock.On("GetCollection", mock.Anything, mock.AnythingOfType("uint16")).Return(tt.args.collection, tt.args.collectionErr)
 
-			got, err := utils.GetAllCollections(client)
+			got, err := utils.GetAllCollections(rpcParameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAllCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -802,8 +809,6 @@ func TestGetDataToCommitFromJob(t *testing.T) {
 }
 
 func TestGetJobs(t *testing.T) {
-	var client *ethclient.Client
-
 	jobsArray := []bindings.StructsJob{
 		{Id: 1, SelectorType: 1, Weight: 100,
 			Power: 2, Name: "ethusd_gemini", Selector: "last",
@@ -812,10 +817,9 @@ func TestGetJobs(t *testing.T) {
 	}
 
 	type args struct {
-		numJobs    uint16
-		numJobsErr error
-		assetType  uint8
-		//assetTypeErr error
+		numJobs      uint16
+		numJobsErr   error
+		assetType    uint8
 		activeJob    bindings.StructsJob
 		activeJobErr error
 	}
@@ -867,10 +871,10 @@ func TestGetJobs(t *testing.T) {
 			}
 			utils := StartRazor(optionsPackageStruct)
 
-			assetMock.On("GetNumJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numJobs, tt.args.numJobsErr)
-			utilsMock.On("GetActiveJob", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.activeJob, tt.args.activeJobErr)
+			utilsMock.On("GetNumJobs", mock.Anything).Return(tt.args.numJobs, tt.args.numJobsErr)
+			utilsMock.On("GetActiveJob", mock.Anything, mock.Anything).Return(tt.args.activeJob, tt.args.activeJobErr)
 
-			got, err := utils.GetJobs(client)
+			got, err := utils.GetJobs(rpcParameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -883,7 +887,6 @@ func TestGetJobs(t *testing.T) {
 }
 
 func TestGetNumActiveCollections(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 
 	type args struct {
@@ -930,7 +933,7 @@ func TestGetNumActiveCollections(t *testing.T) {
 			assetManagerMock.On("GetNumActiveCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfActiveAssets, tt.args.numOfActiveAssetsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNumActiveCollections(client)
+			got, err := utils.GetNumActiveCollections(rpcParameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNumActiveCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -943,7 +946,6 @@ func TestGetNumActiveCollections(t *testing.T) {
 }
 
 func TestGetNumCollections(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 
 	type args struct {
@@ -987,10 +989,10 @@ func TestGetNumCollections(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			assetManagerMock.On("GetNumCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
+			assetManagerMock.On("GetNumCollections", mock.Anything, mock.Anything).Return(tt.args.numOfAssets, tt.args.numOfAssetsErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetNumCollections(client)
+			got, err := utils.GetNumCollections(rpcParameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNumCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1114,7 +1116,6 @@ func TestConvertCustomJobToStructJob(t *testing.T) {
 }
 
 func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
-	var client *ethclient.Client
 	ethCollection := bindings.StructsCollection{
 		Active: true, Id: 7, Power: 2,
 		AggregationMethod: 2, JobIDs: []uint16{1}, Name: "ethCollection",
@@ -1225,7 +1226,7 @@ func TestHandleOfficialJobsFromJSONFile(t *testing.T) {
 
 			utils := &UtilsStruct{}
 
-			gotJobs, gotOverrideJobIds := utils.HandleOfficialJobsFromJSONFile(client, tt.args.collection, tt.args.dataString, commitParams)
+			gotJobs, gotOverrideJobIds := utils.HandleOfficialJobsFromJSONFile(tt.args.collection, tt.args.dataString, commitParams)
 			if !reflect.DeepEqual(gotJobs, tt.want) {
 				t.Errorf("HandleOfficialJobsFromJSONFile() gotJobs = %v, want %v", gotJobs, tt.want)
 			}
@@ -1276,7 +1277,6 @@ var jsonDataString = `{
 
 func TestGetAggregatedDataOfCollection(t *testing.T) {
 	var (
-		client       *ethclient.Client
 		collectionId uint16
 		epoch        uint32
 	)
@@ -1328,9 +1328,9 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetActiveCollection", mock.Anything, mock.Anything).Return(tt.args.activeCollection, tt.args.activeCollectionErr)
-			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
+			utilsMock.On("Aggregate", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionData, tt.args.aggregationErr)
 
-			got, err := utils.GetAggregatedDataOfCollection(client, collectionId, epoch, &types.CommitParams{HttpClient: &http.Client{}})
+			got, err := utils.GetAggregatedDataOfCollection(rpcParameters, collectionId, epoch, &types.CommitParams{HttpClient: &http.Client{}})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAggregatedDataOfCollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1344,7 +1344,6 @@ func TestGetAggregatedDataOfCollection(t *testing.T) {
 
 func TestGetAssignedCollections(t *testing.T) {
 	var (
-		client               *ethclient.Client
 		numActiveCollections uint16
 		seed                 []byte
 	)
@@ -1391,7 +1390,7 @@ func TestGetAssignedCollections(t *testing.T) {
 			utilsMock.On("ToAssign", mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
 			utilsMock.On("Prng", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.assigned)
 
-			got, got1, err := utils.GetAssignedCollections(client, numActiveCollections, seed)
+			got, got1, err := utils.GetAssignedCollections(rpcParameters, numActiveCollections, seed)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAssignedCollections() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1407,10 +1406,7 @@ func TestGetAssignedCollections(t *testing.T) {
 }
 
 func TestGetLeafIdOfACollection(t *testing.T) {
-	var (
-		client       *ethclient.Client
-		collectionId uint16
-	)
+	var collectionId uint16
 	type args struct {
 		leafId    uint16
 		leafIdErr error
@@ -1451,7 +1447,7 @@ func TestGetLeafIdOfACollection(t *testing.T) {
 			assetManagerMock.On("GetLeafIdOfACollection", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.leafId, tt.args.leafIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetLeafIdOfACollection(client, collectionId)
+			got, err := utils.GetLeafIdOfACollection(rpcParameters, collectionId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLeafIdOfACollection() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1464,10 +1460,7 @@ func TestGetLeafIdOfACollection(t *testing.T) {
 }
 
 func TestGetCollectionIdFromIndex(t *testing.T) {
-	var (
-		client      *ethclient.Client
-		medianIndex uint16
-	)
+	var medianIndex uint16
 	type args struct {
 		collectionId    uint16
 		collectionIdErr error
@@ -1508,7 +1501,7 @@ func TestGetCollectionIdFromIndex(t *testing.T) {
 			assetManagerMock.On("GetCollectionIdFromIndex", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetCollectionIdFromIndex(client, medianIndex)
+			got, err := utils.GetCollectionIdFromIndex(rpcParameters, medianIndex)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCollectionIdFromIndex() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1521,10 +1514,7 @@ func TestGetCollectionIdFromIndex(t *testing.T) {
 }
 
 func TestGetCollectionIdFromLeafId(t *testing.T) {
-	var (
-		client *ethclient.Client
-		leafId uint16
-	)
+	var leafId uint16
 	type args struct {
 		collectionId    uint16
 		collectionIdErr error
@@ -1562,10 +1552,10 @@ func TestGetCollectionIdFromLeafId(t *testing.T) {
 				AssetManagerInterface: assetManagerMock,
 			}
 			utils := StartRazor(optionsPackageStruct)
-			assetManagerMock.On("GetCollectionIdFromLeafId", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
+			assetManagerMock.On("GetCollectionIdFromLeafId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.collectionId, tt.args.collectionIdErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetCollectionIdFromLeafId(client, leafId)
+			got, err := utils.GetCollectionIdFromLeafId(rpcParameters, leafId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCollectionIdFromLeafId() error = %v, wantErr %v", err, tt.wantErr)
 				return

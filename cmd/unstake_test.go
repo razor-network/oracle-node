@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/accounts"
 	"razor/core"
@@ -12,6 +11,8 @@ import (
 	"razor/pkg/bindings"
 	"reflect"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -23,7 +24,6 @@ import (
 
 func TestUnstake(t *testing.T) {
 	var config types.Configurations
-	var client *ethclient.Client
 	var account types.Account
 	var stakerId uint32
 
@@ -37,6 +37,7 @@ func TestUnstake(t *testing.T) {
 		lockErr        error
 		state          uint32
 		stateErr       error
+		txnOptsErr     error
 		unstakeTxn     *Types.Transaction
 		unstakeErr     error
 		hash           common.Hash
@@ -117,22 +118,33 @@ func TestUnstake(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name: "Test 9: When there is an error in getting txnOpts",
+			args: args{
+				lock: types.Locks{
+					Amount: big.NewInt(0),
+				},
+				amount:     big.NewInt(1000),
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
-			cmdUtilsMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything).Return(tt.args.approveHash, tt.args.approveHashErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
-			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32"), mock.Anything).Return(tt.args.lock, tt.args.lockErr)
-			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
+			cmdUtilsMock.On("ApproveUnstake", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.approveHash, tt.args.approveHashErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
+			utilsMock.On("GetLock", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.lock, tt.args.lockErr)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
 			stakeManagerMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeTxn, tt.args.unstakeErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			_, gotErr := utils.Unstake(config, client,
+			_, gotErr := utils.Unstake(rpcParameters, config,
 				types.UnstakeInput{
 					Account:    account,
 					StakerId:   stakerId,
@@ -283,13 +295,16 @@ func TestExecuteUnstake(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
+
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -298,10 +313,10 @@ func TestExecuteUnstake(t *testing.T) {
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("AssignAmountInWei", flagSet).Return(tt.args.value, tt.args.valueErr)
-			utilsMock.On("AssignStakerId", flagSet, mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			utilsMock.On("GetLock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
+			utilsMock.On("AssignStakerId", mock.Anything, flagSet, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetLock", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("uint32")).Return(tt.args.lock, tt.args.lockErr)
 			cmdUtilsMock.On("Unstake", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.unstakeHash, tt.args.unstakeErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false
@@ -318,7 +333,6 @@ func TestExecuteUnstake(t *testing.T) {
 
 func TestApproveUnstake(t *testing.T) {
 	var (
-		client             *ethclient.Client
 		stakerTokenAddress common.Address
 		txnArgs            types.TransactionOptions
 	)
@@ -326,9 +340,10 @@ func TestApproveUnstake(t *testing.T) {
 	privateKey, _ := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
 	txnOpts, _ := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(31337))
 	type args struct {
-		txn    *Types.Transaction
-		txnErr error
-		hash   common.Hash
+		txnOptsErr error
+		txn        *Types.Transaction
+		txnErr     error
+		hash       common.Hash
 	}
 	tests := []struct {
 		name    string
@@ -345,9 +360,17 @@ func TestApproveUnstake(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test 1: When there is an error in getting transaction",
+			name: "Test 2: When there is an error in getting transaction",
 			args: args{
 				txnErr: errors.New("error in getting transaction"),
+			},
+			want:    core.NilHash,
+			wantErr: true,
+		},
+		{
+			name: "Test 3: When there is an error in getting txnOpts",
+			args: args{
+				txnOptsErr: errors.New("txnOpts error"),
 			},
 			want:    core.NilHash,
 			wantErr: true,
@@ -357,11 +380,11 @@ func TestApproveUnstake(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(txnOpts)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(txnOpts, tt.args.txnOptsErr)
 			stakeManagerMock.On("ApproveUnstake", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.Anything, mock.Anything).Return(tt.args.txn, tt.args.txnErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 			ut := &UtilsStruct{}
-			got, err := ut.ApproveUnstake(client, stakerTokenAddress, txnArgs)
+			got, err := ut.ApproveUnstake(rpcParameters, stakerTokenAddress, txnArgs)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ApproveUnstake() error = %v, wantErr %v", err, tt.wantErr)
 				return

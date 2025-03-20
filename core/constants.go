@@ -25,8 +25,9 @@ const (
 var NilHash = common.Hash{0x00}
 
 const (
-	BlockCompletionAttempts          = 3
-	BlockCompletionAttemptRetryDelay = 1
+	BlockCompletionAttempts          = 4
+	BlockCompletionAttemptRetryDelay = 2
+	BlockCompletionTimeout           = 15
 )
 
 //Following are the default config values for all the config parameters
@@ -68,8 +69,17 @@ const (
 	DefaultPathName   = ".razor"
 )
 
-//BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again
-const BlockNumberInterval = 5
+const (
+	//BlockNumberInterval is the interval in seconds after which blockNumber needs to be calculated again by blockMonitor
+	BlockNumberInterval = 5
+
+	// StaleBlockNumberCheckInterval specifies the duration in seconds after which the BlockMonitor
+	// switches to an alternate endpoint if the block number remains unchanged, indicating a potential stale endpoint.
+	StaleBlockNumberCheckInterval = 15
+)
+
+//EndpointsContextTimeout defines the maximum duration in seconds to wait for establishing a connection for an endpoint
+const EndpointsContextTimeout = 5
 
 //APIKeyRegex will be used as a regular expression to be matched in job Urls
 const APIKeyRegex = `\$\{(.+?)\}`
@@ -79,9 +89,6 @@ const (
 	ProcessRequestRetryAttempts uint  = 2
 	ProcessRequestRetryDelay    int64 = 2
 )
-
-//SwitchClientDuration is the time after which alternate client from secondary RPC will be switched back to client from primary RPC
-const SwitchClientDuration = 5 * EpochLength
 
 const (
 	// HexReturnType is the ReturnType for a job if that job returns a hex value

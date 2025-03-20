@@ -2,15 +2,13 @@
 package cmd
 
 import (
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -36,29 +34,8 @@ func initialiseCreateCollection(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the CreateCollection function
 func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteCreateCollection: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-
-	logger.SetLoggerParameters(client, address)
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	name, err := flagSetUtils.GetStringName(flagSet)
 	utils.CheckError("Error in getting name: ", err)
@@ -84,23 +61,22 @@ func (*UtilsStruct) ExecuteCreateCollection(flagSet *pflag.FlagSet) {
 		Account:     account,
 	}
 
-	txn, err := cmdUtils.CreateCollection(client, config, collectionInput)
+	txn, err := cmdUtils.CreateCollection(rpcParameters, config, collectionInput)
 	utils.CheckError("CreateCollection error: ", err)
-	err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
+	err = razorUtils.WaitForBlockCompletion(rpcParameters, txn.Hex())
 	utils.CheckError("Error in WaitForBlockCompletion for createCollection: ", err)
 }
 
 //This function allows the admin to create collction if existing jobs are present
-func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
+func (*UtilsStruct) CreateCollection(rpcParameters rpc.RPCParameters, config types.Configurations, collectionInput types.CreateCollectionInput) (common.Hash, error) {
 	jobIds := utils.ConvertUintArrayToUint16Array(collectionInput.JobIds)
 	log.Debug("CreateCollection: Uint16 jobIds: ", jobIds)
-	_, err := cmdUtils.WaitForAppropriateState(client, "create collection", 4)
+	_, err := cmdUtils.WaitForAppropriateState(rpcParameters, "create collection", 4)
 	if err != nil {
 		log.Error("Error in fetching state")
 		return core.NilHash, err
 	}
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:          client,
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
@@ -109,6 +85,15 @@ func (*UtilsStruct) CreateCollection(client *ethclient.Client, config types.Conf
 		ABI:             bindings.CollectionManagerMetaData.ABI,
 		Account:         collectionInput.Account,
 	})
+	if err != nil {
+		return core.NilHash, err
+	}
+
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	log.Debugf("Executing CreateCollection transaction with tolerance: %d, power = %d , aggregation = %d, jobIds = %v, name = %s", collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	txn, err := assetManagerUtils.CreateCollection(client, txnOpts, collectionInput.Tolerance, collectionInput.Power, collectionInput.Aggregation, jobIds, collectionInput.Name)
 	if err != nil {

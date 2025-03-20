@@ -9,14 +9,11 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 	"math/big"
-	"razor/cmd/mocks"
 	"razor/core/types"
-	utilsPkgMocks "razor/utils/mocks"
 	"testing"
 )
 
 func TestUtilsStruct_GetStakerInfo(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 	stake, _ := new(big.Int).SetString("10000000000000000000000", 10)
 
@@ -31,7 +28,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 	}
 
 	type args struct {
-		client        *ethclient.Client
 		stakerId      uint32
 		callOpts      bind.CallOpts
 		stakerInfo    types.Staker
@@ -53,7 +49,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			name:   "Test 1: When StakerInfo executes properly",
 			fields: testUtils,
 			args: args{
-				client:   client,
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -85,7 +80,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			name:   "Test 2: When there is error fetching staker info",
 			fields: testUtils,
 			args: args{
-				client:   client,
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -117,7 +111,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			name:   "Test 3: When there is error fetching maturity",
 			fields: testUtils,
 			args: args{
-				client:   client,
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -149,7 +142,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			name:   "Test 4: When there is error fetching influence",
 			fields: testUtils,
 			args: args{
-				client:   client,
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -181,7 +173,6 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 			name:   "Test 5: When there is error fetching epoch",
 			fields: testUtils,
 			args: args{
-				client:   client,
 				stakerId: 1,
 				callOpts: bind.CallOpts{
 					Pending:     false,
@@ -213,19 +204,15 @@ func TestUtilsStruct_GetStakerInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			utilsMock := new(utilsPkgMocks.Utils)
-			stakeManagerMock := new(mocks.StakeManagerInterface)
-
-			razorUtils = utilsMock
-			stakeManagerUtils = stakeManagerMock
+			SetUpMockInterfaces()
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			stakeManagerMock.On("StakerInfo", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
-			stakeManagerMock.On("GetMaturity", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.CallOpts"), mock.AnythingOfType("uint32")).Return(tt.args.maturity, tt.args.maturityErr)
-			utilsMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influence, tt.args.influenceErr)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("StakerInfo", mock.Anything, mock.Anything).Return(tt.args.stakerInfo, tt.args.stakerInfoErr)
+			utilsMock.On("GetMaturity", mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.maturity, tt.args.maturityErr)
+			utilsMock.On("GetInfluenceSnapshot", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.influence, tt.args.influenceErr)
+			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			utils := &UtilsStruct{}
-			err := utils.GetStakerInfo(tt.args.client, tt.args.stakerId)
+			err := utils.GetStakerInfo(rpcParameters, tt.args.stakerId)
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
 					t.Errorf("Error for StakerInfo function, got = %v, want %v", err, tt.wantErr)
@@ -301,27 +288,21 @@ func TestUtilsStruct_ExecuteStakerinfo(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			utilsMock := new(utilsPkgMocks.Utils)
-			cmdUtilsMock := new(mocks.UtilsCmdInterface)
-			flagSetUtilsMock := new(mocks.FlagSetInterface)
-			fileUtilsMock := new(utilsPkgMocks.FileUtils)
+			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
-			razorUtils = utilsMock
-			cmdUtils = cmdUtilsMock
-			flagSetUtils = flagSetUtilsMock
-			fileUtils = fileUtilsMock
-
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(false)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			flagSetUtilsMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			cmdUtilsMock.On("GetStakerInfo", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.stakerInfoErr)
+			flagSetMock.On("GetUint32StakerId", flagSet).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			cmdUtilsMock.On("GetStakerInfo", mock.Anything, mock.Anything).Return(tt.args.stakerInfoErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

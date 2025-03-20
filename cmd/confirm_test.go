@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"errors"
-	"github.com/stretchr/testify/mock"
 	"math/big"
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -25,6 +26,7 @@ func TestClaimBlockReward(t *testing.T) {
 		sortedProposedBlockIdsErr error
 		selectedBlock             bindings.StructsBlock
 		selectedBlockErr          error
+		txnOptsErr                error
 		ClaimBlockRewardTxn       *Types.Transaction
 		ClaimBlockRewardErr       error
 		hash                      common.Hash
@@ -124,21 +126,33 @@ func TestClaimBlockReward(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: nil,
 		},
+		{
+			name: "Test 9: When there is an error in getting txnOpts",
+			args: args{
+				epoch:                  5,
+				stakerId:               2,
+				sortedProposedBlockIds: []uint32{2, 1, 3},
+				selectedBlock:          bindings.StructsBlock{ProposerId: 2},
+				txnOptsErr:             errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetSortedProposedBlockIds", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
-			utilsMock.On("GetProposedBlock", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.selectedBlock, tt.args.selectedBlockErr)
-			utilsMock.On("GetTxnOpts", options).Return(TxnOpts)
+			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetSortedProposedBlockIds", mock.Anything, mock.Anything).Return(tt.args.sortedProposedBlockIds, tt.args.sortedProposedBlockIdsErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetProposedBlock", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.selectedBlock, tt.args.selectedBlockErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, options).Return(TxnOpts, tt.args.txnOptsErr)
 			blockManagerMock.On("ClaimBlockReward", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("*bind.TransactOpts")).Return(tt.args.ClaimBlockRewardTxn, tt.args.ClaimBlockRewardErr)
 			transactionMock.On("Hash", mock.AnythingOfType("*types.Transaction")).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.ClaimBlockReward(options)
+			got, err := utils.ClaimBlockReward(rpcParameters, options)
 			if got != tt.want {
 				t.Errorf("Txn hash for ClaimBlockReward function, got = %v, want = %v", got, tt.want)
 			}

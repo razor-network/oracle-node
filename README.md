@@ -64,7 +64,7 @@ docker exec -it razor-go razor <command>
 
 ### Prerequisites to building the source
 
-- Golang 1.21.1 or later must be installed.
+- Golang 1.23 or later must be installed.
 - Latest stable version of node is required.
 - Mac users with Silicon chips should use Node 18.18.0 LTS or later versions
 - `geth` and `abigen` should be installed. (Skip this step if you don't want to fetch the bindings and build from scratch)
@@ -118,7 +118,7 @@ $ ./razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value>
 docker
 
 ```
-docker exec -it razor-go razor setConfig --provider <rpc_provider> --alternateProvider <alternate_rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout> --httpTimeout <http_timeout> --logFileMaxSize <file_max_size> --logFileMaxBackups <file_max_backups> --logFileMaxAge <file_max_age>
+docker exec -it razor-go razor setConfig --provider <rpc_provider> --gasmultiplier <multiplier_value> --buffer <buffer_percentage> --wait <wait_for_n_blocks> --gasprice <gas_price> --logLevel <debug_or_info> --gasLimit <gas_limit_multiplier> --rpcTimeout <rpc_timeout> --httpTimeout <http_timeout> --logFileMaxSize <file_max_size> --logFileMaxBackups <file_max_backups> --logFileMaxAge <file_max_age>
 ```
 
 Example:
@@ -189,6 +189,23 @@ Password:
 ```
 
 _Before staking on Razor Network, please ensure your account has sFUEL and RAZOR. For testnet RAZOR, please contact us on Discord._
+
+### Import Endpoints
+
+You can import the endpoints to file `$HOME/.razor/endpoints.json` on your local by using the `importEndpoints` command.
+This command imports multiple providers along with the user input provider, which are then sorted according to the best performance. The best provider is thus chosen by the RPC manager and will be used to make the RPC calls.
+
+razor cli
+
+```
+$ ./razor importEndpoints
+```
+
+docker
+
+```
+docker exec -it razor-go razor importEndpoints
+```
 
 ### Stake
 

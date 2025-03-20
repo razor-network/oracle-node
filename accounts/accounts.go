@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-var log = logger.NewLogger()
+var log = logger.GetLogger()
 
 //This function takes path and password as input and returns new account
 func (am *AccountManager) CreateAccount(keystorePath string, password string) accounts.Account {

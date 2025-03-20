@@ -7,18 +7,18 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 	"strings"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 //This function checks for epoch last committed
-func (*UtilsStruct) CheckForLastCommitted(client *ethclient.Client, staker bindings.StructsStaker, epoch uint32) error {
-	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(client, staker.Id)
+func (*UtilsStruct) CheckForLastCommitted(rpcParameters rpc.RPCParameters, staker bindings.StructsStaker, epoch uint32) error {
+	epochLastCommitted, err := razorUtils.GetEpochLastCommitted(rpcParameters, staker.Id)
 	if err != nil {
 		return err
 	}
@@ -30,8 +30,8 @@ func (*UtilsStruct) CheckForLastCommitted(client *ethclient.Client, staker bindi
 }
 
 //This function checks if the state is reveal or not and then reveals the votes
-func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, commitData types.CommitData, signature []byte) (common.Hash, error) {
-	if state, err := razorUtils.GetBufferedState(client, latestHeader, config.BufferPercent); err != nil || state != 1 {
+func (*UtilsStruct) Reveal(rpcParameters rpc.RPCParameters, config types.Configurations, account types.Account, epoch uint32, latestHeader *Types.Header, stateBuffer uint64, commitData types.CommitData, signature []byte) (common.Hash, error) {
+	if state, err := razorUtils.GetBufferedState(latestHeader, stateBuffer, config.BufferPercent); err != nil || state != 1 {
 		log.Error("Not reveal state")
 		return core.NilHash, err
 	}
@@ -55,8 +55,7 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 
 	log.Info("Revealing votes...")
 
-	txnOpts := razorUtils.GetTxnOpts(types.TransactionOptions{
-		Client:          client,
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, types.TransactionOptions{
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.VoteManagerAddress,
@@ -65,6 +64,17 @@ func (*UtilsStruct) Reveal(client *ethclient.Client, config types.Configurations
 		Parameters:      []interface{}{epoch, treeRevealData, signature},
 		Account:         account,
 	})
+	if err != nil {
+		log.Error(err)
+		return core.NilHash, err
+	}
+
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		log.Error(err)
+		return core.NilHash, err
+	}
+
 	log.Debugf("Executing Reveal transaction wih epoch = %d, treeRevealData = %v, signature = %v", epoch, treeRevealData, signature)
 	txn, err := voteManagerUtils.Reveal(client, txnOpts, epoch, treeRevealData, signature)
 	if err != nil {
@@ -112,9 +122,9 @@ func (*UtilsStruct) GenerateTreeRevealData(merkleTree [][][]byte, commitData typ
 }
 
 //This function indexes the reveal events of current epoch
-func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
+func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(rpcParameters rpc.RPCParameters, blockNumber *big.Int, epoch uint32) ([]types.RevealedStruct, error) {
 	log.Debug("Fetching reveal events of current epoch...")
-	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(client, blockNumber)
+	fromBlock, err := razorUtils.EstimateBlockNumberAtEpochBeginning(rpcParameters, blockNumber)
 	if err != nil {
 		return nil, errors.New("Not able to Fetch Block: " + err.Error())
 	}
@@ -127,7 +137,7 @@ func (*UtilsStruct) IndexRevealEventsOfCurrentEpoch(client *ethclient.Client, bl
 		},
 	}
 	log.Debugf("IndexRevealEventsOfCurrentEpoch: Query to send in filter logs: %+v", query)
-	logs, err := clientUtils.FilterLogsWithRetry(client, query)
+	logs, err := clientUtils.FilterLogsWithRetry(rpcParameters, query)
 	if err != nil {
 		return nil, err
 	}

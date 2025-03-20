@@ -4,20 +4,21 @@ package cmd
 import (
 	"razor/core"
 	"razor/core/types"
+	"razor/rpc"
 
 	"github.com/ethereum/go-ethereum/common"
 )
 
 //This function allows the user to claim the block reward and returns the hash
-func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.Hash, error) {
-	epoch, err := razorUtils.GetEpoch(options.Client)
+func (*UtilsStruct) ClaimBlockReward(rpcParameters rpc.RPCParameters, options types.TransactionOptions) (common.Hash, error) {
+	epoch, err := razorUtils.GetEpoch(rpcParameters)
 	if err != nil {
 		log.Error("Error in getting epoch: ", err)
 		return core.NilHash, err
 	}
 	log.Debug("ClaimBlockReward: Epoch: ", epoch)
 
-	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(options.Client, epoch)
+	sortedProposedBlockIds, err := razorUtils.GetSortedProposedBlockIds(rpcParameters, epoch)
 	if err != nil {
 		log.Error("Error in getting sortedProposedBlockIds: ", err)
 		return core.NilHash, err
@@ -29,14 +30,14 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 		return core.NilHash, nil
 	}
 
-	stakerID, err := razorUtils.GetStakerId(options.Client, options.Account.Address)
+	stakerID, err := razorUtils.GetStakerId(rpcParameters, options.Account.Address)
 	if err != nil {
 		log.Error("Error in getting stakerId: ", err)
 		return core.NilHash, err
 	}
 	log.Debug("ClaimBlockReward: Staker Id: ", stakerID)
 
-	selectedProposedBlock, err := razorUtils.GetProposedBlock(options.Client, epoch, sortedProposedBlockIds[0])
+	selectedProposedBlock, err := razorUtils.GetProposedBlock(rpcParameters, epoch, sortedProposedBlockIds[0])
 	if err != nil {
 		log.Error("Error in getting selectedProposedBlock: ", err)
 		return core.NilHash, err
@@ -45,9 +46,18 @@ func (*UtilsStruct) ClaimBlockReward(options types.TransactionOptions) (common.H
 
 	if selectedProposedBlock.ProposerId == stakerID {
 		log.Info("Claiming block reward...")
-		txnOpts := razorUtils.GetTxnOpts(options)
+		txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, options)
+		if err != nil {
+			return core.NilHash, err
+		}
+
+		client, err := rpcParameters.RPCManager.GetBestRPCClient()
+		if err != nil {
+			return core.NilHash, err
+		}
+
 		log.Debug("Executing ClaimBlockReward transaction...")
-		txn, err := blockManagerUtils.ClaimBlockReward(options.Client, txnOpts)
+		txn, err := blockManagerUtils.ClaimBlockReward(client, txnOpts)
 		if err != nil {
 			log.Error("Error in claiming block reward: ", err)
 			return core.NilHash, err

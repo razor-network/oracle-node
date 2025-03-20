@@ -10,6 +10,7 @@ import (
 	"razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 	"strconv"
 	"time"
@@ -194,58 +195,6 @@ func (stakeManagerUtils StakeManagerUtils) RedeemBounty(client *ethclient.Client
 	return ExecuteTransaction(stakeManager, "RedeemBounty", opts, bountyId)
 }
 
-//This function returns the staker Info
-func (stakeManagerUtils StakeManagerUtils) StakerInfo(client *ethclient.Client, opts *bind.CallOpts, stakerId uint32) (types.Staker, error) {
-	stakeManager := razorUtils.GetStakeManager(client)
-	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "Stakers", opts, stakerId)
-	returnedError := utils.CheckIfAnyError(returnedValues)
-	if returnedError != nil {
-		return types.Staker{}, returnedError
-	}
-	staker := returnedValues[0].Interface().(struct {
-		AcceptDelegation                bool
-		IsSlashed                       bool
-		Commission                      uint8
-		Id                              uint32
-		Age                             uint32
-		Address                         common.Address
-		TokenAddress                    common.Address
-		EpochFirstStakedOrLastPenalized uint32
-		EpochCommissionLastUpdated      uint32
-		Stake                           *big.Int
-		StakerReward                    *big.Int
-	})
-	return staker, nil
-}
-
-//This function returns the maturity
-func (stakeManagerUtils StakeManagerUtils) GetMaturity(client *ethclient.Client, opts *bind.CallOpts, age uint32) (uint16, error) {
-	stakeManager := razorUtils.GetStakeManager(client)
-	index := age / 10000
-	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "Maturities", opts, big.NewInt(int64(index)))
-	returnedError := utils.CheckIfAnyError(returnedValues)
-	if returnedError != nil {
-		return 0, returnedError
-	}
-	return returnedValues[0].Interface().(uint16), nil
-}
-
-//This function returns the bounty lock
-func (stakeManagerUtils StakeManagerUtils) GetBountyLock(client *ethclient.Client, opts *bind.CallOpts, bountyId uint32) (types.BountyLock, error) {
-	stakeManager := razorUtils.GetStakeManager(client)
-	returnedValues := utils.InvokeFunctionWithTimeout(stakeManager, "BountyLocks", opts, bountyId)
-	returnedError := utils.CheckIfAnyError(returnedValues)
-	if returnedError != nil {
-		return types.BountyLock{}, returnedError
-	}
-	bountyLock := returnedValues[0].Interface().(struct {
-		RedeemAfter  uint32
-		BountyHunter common.Address
-		Amount       *big.Int
-	})
-	return bountyLock, nil
-}
-
 //This function is used to claim the staker reward
 func (stakeManagerUtils StakeManagerUtils) ClaimStakerReward(client *ethclient.Client, opts *bind.TransactOpts) (*Types.Transaction, error) {
 	stakeManager := razorUtils.GetStakeManager(client)
@@ -386,30 +335,15 @@ func (blockManagerUtils BlockManagerUtils) Propose(client *ethclient.Client, opt
 }
 
 //This function returns the sorted Ids
-func (blockManagerUtils BlockManagerUtils) GiveSorted(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) (*Types.Transaction, error) {
+func (blockManagerUtils BlockManagerUtils) GiveSorted(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32, leafId uint16, sortedValues []*big.Int) (*Types.Transaction, error) {
+	blockManager := razorUtils.GetBlockManager(client)
 	return ExecuteTransaction(blockManager, "GiveSorted", opts, epoch, leafId, sortedValues)
 }
 
 //This function resets the dispute
-func (blockManagerUtils BlockManagerUtils) ResetDispute(blockManager *bindings.BlockManager, opts *bind.TransactOpts, epoch uint32) (*Types.Transaction, error) {
-	return ExecuteTransaction(blockManager, "ResetDispute", opts, epoch)
-}
-
-// This functiom gets Disputes mapping
-func (blockManagerUtils BlockManagerUtils) Disputes(client *ethclient.Client, opts *bind.CallOpts, epoch uint32, address common.Address) (types.DisputesStruct, error) {
+func (blockManagerUtils BlockManagerUtils) ResetDispute(client *ethclient.Client, opts *bind.TransactOpts, epoch uint32) (*Types.Transaction, error) {
 	blockManager := razorUtils.GetBlockManager(client)
-	returnedValues := utils.InvokeFunctionWithTimeout(blockManager, "Disputes", opts, epoch, address)
-	returnedError := utils.CheckIfAnyError(returnedValues)
-	if returnedError != nil {
-		return types.DisputesStruct{}, returnedError
-	}
-	disputesMapping := returnedValues[0].Interface().(struct {
-		LeafId           uint16
-		LastVisitedValue *big.Int
-		AccWeight        *big.Int
-		Median           *big.Int
-	})
-	return disputesMapping, nil
+	return ExecuteTransaction(blockManager, "ResetDispute", opts, epoch)
 }
 
 //This function is used to reveal the values
@@ -452,17 +386,6 @@ func (voteManagerUtils VoteManagerUtils) Commit(client *ethclient.Client, opts *
 		return nil, err
 	}
 	return txn, nil
-}
-
-//This function is used to check the allowance of staker
-func (tokenManagerUtils TokenManagerUtils) Allowance(client *ethclient.Client, opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
-	tokenManager := razorUtils.GetTokenManager(client)
-	returnedValues := utils.InvokeFunctionWithTimeout(tokenManager, "Allowance", opts, owner, spender)
-	returnedError := utils.CheckIfAnyError(returnedValues)
-	if returnedError != nil {
-		return nil, returnedError
-	}
-	return returnedValues[0].Interface().(*big.Int), nil
 }
 
 //This function is used to approve the transaction
@@ -693,8 +616,8 @@ func (c CryptoUtils) HexToECDSA(hexKey string) (*ecdsa.PrivateKey, error) {
 }
 
 //This function is used to give the sorted Ids
-func (*UtilsStruct) GiveSorted(client *ethclient.Client, blockManager *bindings.BlockManager, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
-	return GiveSorted(client, blockManager, txnArgs, epoch, assetId, sortedStakers)
+func (*UtilsStruct) GiveSorted(rpcParameters rpc.RPCParameters, txnArgs types.TransactionOptions, epoch uint32, assetId uint16, sortedStakers []*big.Int) error {
+	return GiveSorted(rpcParameters, txnArgs, epoch, assetId, sortedStakers)
 }
 
 //This function is used to write config as

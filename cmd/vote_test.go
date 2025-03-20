@@ -4,20 +4,20 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"os"
 	"path"
 	"path/filepath"
 	"razor/accounts"
+	"razor/block"
 	"razor/cache"
 	"razor/core/types"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 	"reflect"
 	"testing"
-	"time"
-
-	Types "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -151,14 +151,16 @@ func TestExecuteVote(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("GetStateBuffer", mock.Anything).Return(uint64(5), nil)
@@ -169,7 +171,7 @@ func TestExecuteVote(t *testing.T) {
 			flagSetMock.On("GetStringSliceBackupNode", mock.Anything).Return([]string{}, nil)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			flagSetMock.On("GetBoolRogue", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueStatus, tt.args.rogueErr)
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			flagSetMock.On("GetStringSliceRogueMode", mock.AnythingOfType("*pflag.FlagSet")).Return(tt.args.rogueMode, tt.args.rogueModeErr)
 			cmdUtilsMock.On("InitJobAndCollectionCache", mock.Anything).Return(&cache.JobsCache{}, &cache.CollectionsCache{}, big.NewInt(100), nil)
 			cmdUtilsMock.On("HandleExit").Return()
@@ -336,9 +338,9 @@ func TestCalculateSecret(t *testing.T) {
 
 func TestInitiateCommit(t *testing.T) {
 	var (
-		client       *ethclient.Client
 		config       types.Configurations
 		latestHeader *Types.Header
+		stateBuffer  uint64
 		account      types.Account
 		stakerId     uint32
 		rogueData    types.Rogue
@@ -352,28 +354,27 @@ func TestInitiateCommit(t *testing.T) {
 	}
 
 	type args struct {
-		staker                    bindings.StructsStaker
-		stakerErr                 error
-		minStakeAmount            *big.Int
-		minStakeAmountErr         error
-		epoch                     uint32
-		lastCommit                uint32
-		lastCommitErr             error
-		secret                    []byte
-		secretErr                 error
-		signature                 []byte
-		salt                      [32]byte
-		saltErr                   error
-		path                      string
-		pathErr                   error
-		commitData                types.CommitData
-		commitDataErr             error
-		commitTxn                 common.Hash
-		commitTxnErr              error
-		waitForBlockCompletionErr error
-		fileName                  string
-		fileNameErr               error
-		saveErr                   error
+		staker            bindings.StructsStaker
+		stakerErr         error
+		minStakeAmount    *big.Int
+		minStakeAmountErr error
+		epoch             uint32
+		lastCommit        uint32
+		lastCommitErr     error
+		secret            []byte
+		secretErr         error
+		signature         []byte
+		salt              [32]byte
+		saltErr           error
+		path              string
+		pathErr           error
+		commitData        types.CommitData
+		commitDataErr     error
+		commitTxn         common.Hash
+		commitTxnErr      error
+		fileName          string
+		fileNameErr       error
+		saveErr           error
 	}
 	tests := []struct {
 		name    string
@@ -393,7 +394,7 @@ func TestInitiateCommit(t *testing.T) {
 				commitData: types.CommitData{
 					AssignedCollections:    nil,
 					SeqAllottedCollections: nil,
-					Leaves:                 nil,
+					Leaves:                 []*big.Int{big.NewInt(100)},
 				},
 				commitTxn: common.BigToHash(big.NewInt(1)),
 				fileName:  "",
@@ -519,28 +520,29 @@ func TestInitiateCommit(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Test 12: When there is an error in sending commit transaction",
-			args: args{
-				epoch:      5,
-				lastCommit: 2,
-				secret:     []byte{1},
-				salt:       [32]byte{},
-				commitData: types.CommitData{
-					AssignedCollections:    nil,
-					SeqAllottedCollections: nil,
-					Leaves:                 nil,
-				},
-				commitTxn:                 common.BigToHash(big.NewInt(1)),
-				waitForBlockCompletionErr: errors.New("transaction mining unsuccessful"),
-			},
-			wantErr: true,
-		},
-		{
-			name: "Test 13: When there is an error in getting path",
+			name: "Test 12: When there is an error in getting path",
 			args: args{
 				epoch:      5,
 				lastCommit: 2,
 				pathErr:    errors.New("path error"),
+			},
+			wantErr: true,
+		},
+		{
+			name: "Test 13: When there is an error in getting commitment as values is nil",
+			args: args{
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				minStakeAmount: big.NewInt(100),
+				epoch:          5,
+				lastCommit:     2,
+				signature:      []byte{2},
+				secret:         []byte{1},
+				salt:           [32]byte{},
+				commitData: types.CommitData{
+					AssignedCollections:    nil,
+					SeqAllottedCollections: nil,
+					Leaves:                 []*big.Int{},
+				},
 			},
 			wantErr: true,
 		},
@@ -549,21 +551,23 @@ func TestInitiateCommit(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			utilsMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
-			utilsMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastCommit, tt.args.lastCommitErr)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
-			cmdUtilsMock.On("GetSalt", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.salt, tt.args.saltErr)
+			utils.MerkleInterface = &utils.MerkleTreeStruct{}
+			merkleUtils = utils.MerkleInterface
+
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
+			utilsMock.On("GetMinStakeAmount", mock.Anything).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
+			utilsMock.On("GetEpochLastCommitted", mock.Anything, mock.Anything).Return(tt.args.lastCommit, tt.args.lastCommitErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return(tt.args.salt, tt.args.saltErr)
 			cmdUtilsMock.On("HandleCommitState", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitData, tt.args.commitDataErr)
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.waitForBlockCompletionErr)
+			cmdUtilsMock.On("Commit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.commitTxn, tt.args.commitTxnErr)
 			pathMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
-			fileUtilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
+			fileUtilsMock.On("SaveDataToCommitJsonFile", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.saveErr)
 			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything).Return(&Types.Header{Number: big.NewInt(100)}, nil)
-			clientUtilsMock.On("FilterLogsWithRetry", mock.Anything, mock.Anything).Return([]Types.Log{}, nil)
+			clientUtilsMock.On("FilterLogsWithRetry", mock.Anything, mock.Anything, mock.Anything).Return([]Types.Log{}, nil)
 			ut := &UtilsStruct{}
-			if err := ut.InitiateCommit(client, config, account, tt.args.epoch, stakerId, latestHeader, commitParams, rogueData); (err != nil) != tt.wantErr {
+			if err := ut.InitiateCommit(rpcParameters, config, account, tt.args.epoch, stakerId, latestHeader, commitParams, stateBuffer, rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiateCommit() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -572,14 +576,20 @@ func TestInitiateCommit(t *testing.T) {
 
 func TestInitiateReveal(t *testing.T) {
 	var (
-		client       *ethclient.Client
 		config       types.Configurations
 		account      types.Account
 		latestHeader *Types.Header
+		stateBuffer  uint64
 	)
+
+	decodedCommitment, _ := hex.DecodeString("f3955999458f88a8440026a24e53c0761b67475e742556bf55bbe3bbdf5028ed")
+	var decodedCommitment32 [32]byte
+	copy(decodedCommitment32[:], decodedCommitment)
 
 	randomNum := big.NewInt(1111)
 	globalCommitDataStruct.Epoch = 5
+	globalCommitDataStruct.Leaves = []*big.Int{big.NewInt(100), big.NewInt(101)}
+	globalCommitDataStruct.Commitment = decodedCommitment32
 
 	type args struct {
 		staker                   bindings.StructsStaker
@@ -610,15 +620,13 @@ func TestInitiateReveal(t *testing.T) {
 		{
 			name: "Test 1: When InitiateReveal executes successfully",
 			args: args{
-				staker:                bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
-				minStakeAmount:        big.NewInt(100),
-				epoch:                 5,
-				lastReveal:            2,
-				fileName:              "",
-				committedDataFromFile: types.CommitFileData{Epoch: 5},
-				signature:             []byte{1},
-				secret:                []byte{},
-				revealTxn:             common.BigToHash(big.NewInt(1)),
+				staker:         bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				minStakeAmount: big.NewInt(100),
+				epoch:          5,
+				lastReveal:     2,
+				signature:      []byte{1},
+				secret:         []byte{},
+				revealTxn:      common.BigToHash(big.NewInt(1)),
 			},
 			wantErr: false,
 		},
@@ -733,8 +741,9 @@ func TestInitiateReveal(t *testing.T) {
 				lastReveal: 2,
 				fileName:   "",
 				committedDataFromFile: types.CommitFileData{
-					Epoch:  5,
-					Leaves: []*big.Int{big.NewInt(1), big.NewInt(2)},
+					Epoch:      5,
+					Leaves:     []*big.Int{big.NewInt(1), big.NewInt(2)},
+					Commitment: decodedCommitment32,
 				},
 				secret:    []byte{},
 				revealTxn: common.BigToHash(big.NewInt(1)),
@@ -771,20 +780,20 @@ func TestInitiateReveal(t *testing.T) {
 			utils.MerkleInterface = &utils.MerkleTreeStruct{}
 			merkleUtils = utils.MerkleInterface
 
-			utilsMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
-			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
-			cmdUtilsMock.On("CheckForLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint32")).Return(tt.args.revealStateErr)
+			utilsMock.On("GetMinStakeAmount", mock.Anything).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
+			utilsMock.On("GetEpochLastRevealed", mock.Anything, mock.Anything).Return(tt.args.lastReveal, tt.args.lastRevealErr)
+			cmdUtilsMock.On("CheckForLastCommitted", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealStateErr)
 			pathMock.On("GetCommitDataFileName", mock.AnythingOfType("string")).Return(tt.args.fileName, tt.args.fileNameErr)
 			fileUtilsMock.On("ReadFromCommitJsonFile", mock.Anything).Return(tt.args.committedDataFromFile, tt.args.committedDataFromFileErr)
 			utilsMock.On("GetRogueRandomValue", mock.AnythingOfType("int")).Return(randomNum)
 			pathMock.On("GetDefaultPath").Return(tt.args.path, tt.args.pathErr)
-			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
+			cmdUtilsMock.On("CalculateSecret", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.signature, tt.args.secret, tt.args.secretErr)
 			cmdUtilsMock.On("GetSalt", mock.Anything, mock.Anything).Return([32]byte{}, nil)
-			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(types.Commitment{}, nil)
+			utilsMock.On("GetCommitment", mock.Anything, mock.Anything).Return(types.Commitment{CommitmentHash: decodedCommitment32}, nil)
 			cmdUtilsMock.On("Reveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.revealTxn, tt.args.revealTxnErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 			ut := &UtilsStruct{}
-			if err := ut.InitiateReveal(client, config, account, tt.args.epoch, tt.args.staker, latestHeader, tt.args.rogueData); (err != nil) != tt.wantErr {
+			if err := ut.InitiateReveal(rpcParameters, config, account, tt.args.epoch, tt.args.staker, latestHeader, stateBuffer, tt.args.rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiateReveal() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -793,10 +802,10 @@ func TestInitiateReveal(t *testing.T) {
 
 func TestInitiatePropose(t *testing.T) {
 	var (
-		client    *ethclient.Client
-		config    types.Configurations
-		account   types.Account
-		rogueData types.Rogue
+		config      types.Configurations
+		account     types.Account
+		rogueData   types.Rogue
+		stateBuffer uint64
 	)
 	type args struct {
 		staker            bindings.StructsStaker
@@ -897,13 +906,13 @@ func TestInitiatePropose(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetMinStakeAmount", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
-			utilsMock.On("GetEpochLastProposed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastProposal, tt.args.lastProposalErr)
-			utilsMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.lastReveal, tt.args.lastRevealErr)
+			utilsMock.On("GetMinStakeAmount", mock.Anything).Return(tt.args.minStakeAmount, tt.args.minStakeAmountErr)
+			utilsMock.On("GetEpochLastProposed", mock.Anything, mock.Anything).Return(tt.args.lastProposal, tt.args.lastProposalErr)
+			utilsMock.On("GetEpochLastRevealed", mock.Anything, mock.Anything).Return(tt.args.lastReveal, tt.args.lastRevealErr)
 			cmdUtilsMock.On("Propose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.proposeTxnErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 			ut := &UtilsStruct{}
-			if err := ut.InitiatePropose(client, config, account, tt.args.epoch, tt.args.staker, latestHeader, rogueData); (err != nil) != tt.wantErr {
+			if err := ut.InitiatePropose(rpcParameters, config, account, tt.args.epoch, tt.args.staker, latestHeader, stateBuffer, rogueData); (err != nil) != tt.wantErr {
 				t.Errorf("InitiatePropose() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -912,7 +921,6 @@ func TestInitiatePropose(t *testing.T) {
 
 func TestHandleBlock(t *testing.T) {
 	var (
-		client                    *ethclient.Client
 		account                   types.Account
 		stakerId                  uint32
 		commitParams              *types.CommitParams
@@ -924,31 +932,35 @@ func TestHandleBlock(t *testing.T) {
 		Number: big.NewInt(1001),
 	}
 	type args struct {
-		config               types.Configurations
-		state                int64
-		stateErr             error
-		epoch                uint32
-		epochErr             error
-		stateName            string
-		staker               bindings.StructsStaker
-		stakerErr            error
-		ethBalance           *big.Int
-		ethBalanceErr        error
-		actualStake          *big.Float
-		actualStakeErr       error
-		actualBalance        *big.Float
-		sRZRBalance          *big.Int
-		sRZRBalanceErr       error
-		sRZRInEth            *big.Float
-		initiateCommitErr    error
-		initiateRevealErr    error
-		initiateProposeErr   error
-		handleDisputeErr     error
-		claimBlockRewardTxn  common.Hash
-		claimBlockRewardErr  error
-		lastVerification     uint32
-		isFlagPassed         bool
-		handleClaimBountyErr error
+		config                types.Configurations
+		stateBufferErr        error
+		stateRemainingTimeErr error
+		state                 int64
+		stateErr              error
+		epoch                 uint32
+		epochErr              error
+		stateName             string
+		staker                bindings.StructsStaker
+		stakerErr             error
+		ethBalance            *big.Int
+		ethBalanceErr         error
+		actualStake           *big.Float
+		actualStakeErr        error
+		actualBalance         *big.Float
+		sRZRBalance           *big.Int
+		sRZRBalanceErr        error
+		sRZRInEth             *big.Float
+		initiateCommitErr     error
+		initiateRevealErr     error
+		initiateProposeErr    error
+		handleDisputeErr      error
+		claimBlockRewardTxn   common.Hash
+		claimBlockRewardErr   error
+		lastVerification      uint32
+		isFlagPassed          bool
+		handleClaimBountyErr  error
+		confirmedBlock        types.ConfirmedBlock
+		confirmedBlockErr     error
 	}
 	tests := []struct {
 		name string
@@ -1162,33 +1174,38 @@ func TestHandleBlock(t *testing.T) {
 		{
 			name: "Test 19: When claimBlockReward executes successfully in confirm state",
 			args: args{
-				state:               4,
-				epoch:               1,
-				stateName:           "confirm",
-				lastVerification:    1,
-				staker:              bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
-				ethBalance:          big.NewInt(1000),
-				actualStake:         big.NewFloat(10000),
-				actualBalance:       big.NewFloat(1000),
-				sRZRBalance:         big.NewInt(10000),
-				sRZRInEth:           big.NewFloat(100),
+				state:            4,
+				epoch:            1,
+				stateName:        "confirm",
+				lastVerification: 1,
+				staker:           bindings.StructsStaker{Id: 1, Stake: big.NewInt(10000)},
+				ethBalance:       big.NewInt(1000),
+				actualStake:      big.NewFloat(10000),
+				actualBalance:    big.NewFloat(1000),
+				sRZRBalance:      big.NewInt(10000),
+				sRZRInEth:        big.NewFloat(100),
+				confirmedBlock: types.ConfirmedBlock{
+					ProposerId: 0,
+				},
 				claimBlockRewardTxn: common.BigToHash(big.NewInt(1)),
 			},
 		},
 		{
-			name: "Test 20: When there is an error in claimBlockReward",
+			name: "Test 20: When in confirm state and the block is already confirmed",
 			args: args{
-				state:               4,
-				epoch:               2,
-				stateName:           "confirm",
-				lastVerification:    1,
-				staker:              bindings.StructsStaker{Id: 2, Stake: big.NewInt(10000)},
-				ethBalance:          big.NewInt(1000),
-				actualStake:         big.NewFloat(10000),
-				actualBalance:       big.NewFloat(1000),
-				sRZRBalance:         big.NewInt(10000),
-				sRZRInEth:           big.NewFloat(100),
-				claimBlockRewardErr: errors.New("error in claimBlockReward"),
+				state:            4,
+				epoch:            2,
+				stateName:        "confirm",
+				lastVerification: 1,
+				staker:           bindings.StructsStaker{Id: 2, Stake: big.NewInt(10000)},
+				ethBalance:       big.NewInt(1000),
+				actualStake:      big.NewFloat(10000),
+				actualBalance:    big.NewFloat(1000),
+				sRZRBalance:      big.NewInt(10000),
+				sRZRInEth:        big.NewFloat(100),
+				confirmedBlock: types.ConfirmedBlock{
+					ProposerId: 1,
+				},
 			},
 		},
 		{
@@ -1222,30 +1239,54 @@ func TestHandleBlock(t *testing.T) {
 				config:           types.Configurations{WaitTime: 6},
 			},
 		},
+		{
+			name: "Test 23: When there is an error in getting stateBuffer",
+			args: args{
+				stateBufferErr: errors.New("state buffer error"),
+			},
+		},
+		{
+			name: "Test 24: When in confirm state and there is an error in getting confirmed block for the epoch",
+			args: args{
+				state:             4,
+				epoch:             2,
+				stateName:         "confirm",
+				lastVerification:  1,
+				staker:            bindings.StructsStaker{Id: 2, Stake: big.NewInt(10000)},
+				ethBalance:        big.NewInt(1000),
+				actualStake:       big.NewFloat(10000),
+				actualBalance:     big.NewFloat(1000),
+				sRZRBalance:       big.NewInt(10000),
+				sRZRInEth:         big.NewFloat(100),
+				confirmedBlockErr: errors.New("blocks error"),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
+			utilsMock.On("GetStateBuffer", mock.Anything).Return(uint64(5), tt.args.stateBufferErr)
+			utilsMock.On("GetRemainingTimeOfCurrentState", mock.Anything, mock.Anything, mock.Anything).Return(int64(10), tt.args.stateRemainingTimeErr)
 			utilsMock.On("GetBufferedState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.state, tt.args.stateErr)
-			utilsMock.On("GetEpoch", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.epoch, tt.args.epochErr)
-			utilsMock.On("GetStaker", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.staker, tt.args.stakerErr)
-			clientUtilsMock.On("BalanceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
+			utilsMock.On("GetEpoch", mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetStaker", mock.Anything, mock.Anything).Return(tt.args.staker, tt.args.stakerErr)
+			clientUtilsMock.On("BalanceAtWithRetry", mock.Anything, mock.Anything).Return(tt.args.ethBalance, tt.args.ethBalanceErr)
 			utilsMock.On("GetStakerSRZRBalance", mock.Anything, mock.Anything).Return(tt.args.sRZRBalance, tt.args.sRZRBalanceErr)
 			osMock.On("Exit", mock.AnythingOfType("int")).Return()
-			cmdUtilsMock.On("InitiateCommit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateCommitErr)
-			cmdUtilsMock.On("InitiateReveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateRevealErr)
-			cmdUtilsMock.On("InitiatePropose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateProposeErr)
+			cmdUtilsMock.On("InitiateCommit", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateCommitErr)
+			cmdUtilsMock.On("InitiateReveal", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateRevealErr)
+			cmdUtilsMock.On("InitiatePropose", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.initiateProposeErr)
 			cmdUtilsMock.On("HandleDispute", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleDisputeErr)
 			utilsMock.On("IsFlagPassed", mock.AnythingOfType("string")).Return(tt.args.isFlagPassed)
 			cmdUtilsMock.On("HandleClaimBounty", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.handleClaimBountyErr)
-			cmdUtilsMock.On("ClaimBlockReward", mock.Anything).Return(tt.args.claimBlockRewardTxn, tt.args.claimBlockRewardErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.Anything).Return(nil)
+			utilsMock.On("GetConfirmedBlocks", mock.Anything, mock.Anything).Return(tt.args.confirmedBlock, tt.args.confirmedBlockErr)
+			cmdUtilsMock.On("ClaimBlockReward", mock.Anything, mock.Anything).Return(tt.args.claimBlockRewardTxn, tt.args.claimBlockRewardErr)
 			timeMock.On("Sleep", mock.Anything).Return()
 			utilsMock.On("WaitTillNextNSecs", mock.AnythingOfType("int32")).Return()
 			lastVerification = tt.args.lastVerification
 			ut := &UtilsStruct{}
-			ut.HandleBlock(client, account, stakerId, latestHeader, tt.args.config, commitParams, rogueData, backupNodeActionsToIgnore)
+			ut.HandleBlock(rpcParameters, account, stakerId, latestHeader, tt.args.config, commitParams, rogueData, backupNodeActionsToIgnore)
 		})
 	}
 }
@@ -1253,7 +1294,6 @@ func TestHandleBlock(t *testing.T) {
 func TestVote(t *testing.T) {
 	var (
 		config                    types.Configurations
-		client                    *ethclient.Client
 		rogueData                 types.Rogue
 		account                   types.Account
 		stakerId                  uint32
@@ -1288,15 +1328,17 @@ func TestVote(t *testing.T) {
 			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything).Return(tt.args.header, nil)
 			cmdUtilsMock.On("HandleBlock", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
+			localRpcParameters := rpc.RPCParameters{
+				Ctx:        ctx,
+				RPCManager: &rpcManager,
+			}
+
 			ut := &UtilsStruct{}
 			errChan := make(chan error)
 			// Run Vote function in a goroutine
 			go func() {
-				errChan <- ut.Vote(ctx, config, client, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
+				errChan <- ut.Vote(localRpcParameters, &block.BlockMonitor{}, config, account, stakerId, commitParams, rogueData, backupNodeActionsToIgnore)
 			}()
-
-			// Wait for some time to allow Vote function to execute
-			time.Sleep(time.Second * 2)
 
 			// Cancel the context to simulate its done
 			cancel()

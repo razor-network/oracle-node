@@ -3,13 +3,13 @@ package cmd
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/sirupsen/logrus"
-	"razor/client"
 	"razor/core"
 	"razor/core/types"
+	"razor/rpc"
 	"razor/utils"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/spf13/viper"
 )
@@ -18,7 +18,6 @@ import (
 func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	config := types.Configurations{
 		Provider:           "",
-		AlternateProvider:  "",
 		GasMultiplier:      0,
 		BufferPercent:      0,
 		WaitTime:           0,
@@ -32,10 +31,6 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 	}
 
 	provider, err := cmdUtils.GetProvider()
-	if err != nil {
-		return config, err
-	}
-	alternateProvider, err := cmdUtils.GetAlternateProvider()
 	if err != nil {
 		return config, err
 	}
@@ -88,8 +83,6 @@ func (*UtilsStruct) GetConfigData() (types.Configurations, error) {
 		return config, err
 	}
 	config.Provider = provider
-	config.AlternateProvider = alternateProvider
-	client.SetAlternateProvider(alternateProvider)
 	config.GasMultiplier = gasMultiplier
 	config.BufferPercent = bufferPercent
 	config.WaitTime = waitTime
@@ -170,19 +163,6 @@ func (*UtilsStruct) GetProvider() (string, error) {
 	return providerString, nil
 }
 
-//This function returns the alternate provider
-func (*UtilsStruct) GetAlternateProvider() (string, error) {
-	alternateProvider, err := getConfigValue("alternateProvider", "string", "", "alternateProvider")
-	if err != nil {
-		return "", err
-	}
-	alternateProviderString := alternateProvider.(string)
-	if !strings.HasPrefix(alternateProviderString, "https") {
-		log.Warn("You are not using a secure RPC URL. Switch to an https URL instead to be safe.")
-	}
-	return alternateProviderString, nil
-}
-
 //This function returns the multiplier
 func (*UtilsStruct) GetMultiplier() (float32, error) {
 	const (
@@ -228,7 +208,7 @@ func (*UtilsStruct) GetBufferPercent() (int32, error) {
 func (*UtilsStruct) GetWaitTime() (int32, error) {
 	const (
 		MinWaitTime = 1  // Minimum wait time in seconds
-		MaxWaitTime = 30 // Maximum wait time in seconds
+		MaxWaitTime = 15 // Maximum wait time in seconds
 	)
 
 	waitTime, err := getConfigValue("wait", "int32", core.DefaultWaitTime, "wait")
@@ -323,7 +303,7 @@ func (*UtilsStruct) GetGasLimitOverride() (uint64, error) {
 //This function returns the RPC timeout
 func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 	const (
-		MinRPCTimeout = 5  // Minimum RPC timeout in seconds
+		MinRPCTimeout = 1  // Minimum RPC timeout in seconds
 		MaxRPCTimeout = 10 // Maximum RPC timeout in seconds
 	)
 
@@ -345,7 +325,7 @@ func (*UtilsStruct) GetRPCTimeout() (int64, error) {
 
 func (*UtilsStruct) GetHTTPTimeout() (int64, error) {
 	const (
-		MinHTTPTimeout = 5 // Minimum HTTP timeout in seconds
+		MinHTTPTimeout = 3 // Minimum HTTP timeout in seconds
 		MaxHTTPTimeout = 8 // Maximum HTTP timeout in seconds
 	)
 
@@ -392,10 +372,8 @@ func (*UtilsStruct) GetLogFileMaxAge() (int, error) {
 //This function sets the log level
 func setLogLevel(config types.Configurations) {
 	if config.LogLevel == "debug" {
-		log.SetLevel(logrus.DebugLevel)
+		log.SetLogLevel(logrus.DebugLevel)
 	}
-
-	log.Debugf("Config details: %+v", config)
 
 	if razorUtils.IsFlagPassed("logFile") {
 		log.Debugf("Log File Max Size: %d MB", config.LogFileMaxSize)
@@ -404,8 +382,8 @@ func setLogLevel(config types.Configurations) {
 	}
 }
 
-func ValidateBufferPercentLimit(client *ethclient.Client, bufferPercent int32) error {
-	stateBuffer, err := razorUtils.GetStateBuffer(client)
+func ValidateBufferPercentLimit(rpcParameters rpc.RPCParameters, bufferPercent int32) error {
+	stateBuffer, err := razorUtils.GetStateBuffer(rpcParameters)
 	if err != nil {
 		return err
 	}

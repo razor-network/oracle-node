@@ -8,7 +8,6 @@ import (
 	"razor/core/types"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	Types "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -16,71 +15,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestCheckCurrentStatus(t *testing.T) {
-
-	var client *ethclient.Client
-	var assetId uint16
-
-	type args struct {
-		callOpts        bind.CallOpts
-		activeStatus    bool
-		activeStatusErr error
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    bool
-		wantErr error
-	}{
-		{
-			name: "Test 1: When CheckCurrentStatus function executes successfully",
-			args: args{
-				callOpts:        bind.CallOpts{},
-				activeStatus:    true,
-				activeStatusErr: nil,
-			},
-			want:    true,
-			wantErr: nil,
-		},
-		{
-			name: "Test 2: When GetActiveStatus function gives an error",
-			args: args{
-				callOpts:        bind.CallOpts{},
-				activeStatusErr: errors.New("activeStatus error"),
-			},
-			want:    false,
-			wantErr: errors.New("activeStatus error"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			SetUpMockInterfaces()
-
-			utilsMock.On("GetOptions").Return(tt.args.callOpts)
-			assetManagerMock.On("GetActiveStatus", mock.AnythingOfType("*ethclient.Client"), mock.Anything, mock.AnythingOfType("uint16")).Return(tt.args.activeStatus, tt.args.activeStatusErr)
-
-			utils := &UtilsStruct{}
-			got, err := utils.CheckCurrentStatus(client, assetId)
-			if got != tt.want {
-				t.Errorf("Status from CheckCurrentStatus function, got = %v, want %v", got, tt.want)
-			}
-			if err == nil || tt.wantErr == nil {
-				if err != tt.wantErr {
-					t.Errorf("Error for CheckCurrentStatus function, got = %v, want %v", err, tt.wantErr)
-				}
-			} else {
-				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("Error for CheckCurrentStatus function, got = %v, want %v", err, tt.wantErr)
-				}
-			}
-
-		})
-	}
-}
-
 func TestModifyAssetStatus(t *testing.T) {
 	var config types.Configurations
-	var client *ethclient.Client
 
 	type args struct {
 		status              bool
@@ -88,6 +24,7 @@ func TestModifyAssetStatus(t *testing.T) {
 		currentStatusErr    error
 		epoch               uint32
 		epochErr            error
+		txnOptsErr          error
 		SetCollectionStatus *Types.Transaction
 		SetAssetStatusErr   error
 		hash                common.Hash
@@ -155,20 +92,31 @@ func TestModifyAssetStatus(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("WaitForAppropriateState error"),
 		},
+		{
+			name: "Test 6: When there is an error in getting txnOpts",
+			args: args{
+				status:              true,
+				currentStatus:       false,
+				SetCollectionStatus: &Types.Transaction{},
+				txnOptsErr:          errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			cmdUtilsMock.On("CheckCurrentStatus", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint16")).Return(tt.args.currentStatus, tt.args.currentStatusErr)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
-			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
+			utilsMock.On("GetActiveStatus", mock.Anything, mock.Anything).Return(tt.args.currentStatus, tt.args.currentStatusErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.epoch, tt.args.epochErr)
 			assetManagerMock.On("SetCollectionStatus", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.SetCollectionStatus, tt.args.SetAssetStatusErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
 
-			got, err := utils.ModifyCollectionStatus(client, config, types.ModifyCollectionInput{
+			got, err := utils.ModifyCollectionStatus(rpcParameters, config, types.ModifyCollectionInput{
 				Status: tt.args.status,
 			})
 			if got != tt.want {
@@ -309,13 +257,16 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
+
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			flagSetMock.On("GetStringAddress", flagSet).Return(tt.args.address, tt.args.addressErr)
@@ -327,7 +278,7 @@ func TestExecuteModifyAssetStatus(t *testing.T) {
 			stringMock.On("ParseBool", mock.AnythingOfType("string")).Return(tt.args.parseStatus, tt.args.parseStatusErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
 			cmdUtilsMock.On("ModifyCollectionStatus", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.ModifyCollectionStatusHash, tt.args.ModifyCollectionStatusErr)
-			utilsMock.On("WaitForBlockCompletion", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(nil)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

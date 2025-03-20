@@ -2,15 +2,13 @@
 package cmd
 
 import (
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -31,31 +29,8 @@ func initialiseModifyCollectionStatus(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ModifyCollectionStatus function
 func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteModifyCollectionStatus: Config: %+v: ", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-	log.Debug("ExecuteModifyCollectionStatus: Address: ", address)
-
-	logger.SetLoggerParameters(client, address)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)
 	utils.CheckError("Error in getting collectionId: ", err)
@@ -72,23 +47,17 @@ func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
 		Account:      account,
 	}
 
-	txn, err := cmdUtils.ModifyCollectionStatus(client, config, modifyCollectionInput)
+	txn, err := cmdUtils.ModifyCollectionStatus(rpcParameters, config, modifyCollectionInput)
 	utils.CheckError("Error in changing collection active status: ", err)
 	if txn != core.NilHash {
-		err = razorUtils.WaitForBlockCompletion(client, txn.Hex())
+		err = razorUtils.WaitForBlockCompletion(rpcParameters, txn.Hex())
 		utils.CheckError("Error in WaitForBlockCompletion for modifyCollectionStatus: ", err)
 	}
 }
 
-//This function checks the current status of particular collectionId
-func (*UtilsStruct) CheckCurrentStatus(client *ethclient.Client, collectionId uint16) (bool, error) {
-	callOpts := razorUtils.GetOptions()
-	return assetManagerUtils.GetActiveStatus(client, &callOpts, collectionId)
-}
-
 //This function allows the admin to modify the active status of collection
-func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
-	currentStatus, err := cmdUtils.CheckCurrentStatus(client, modifyCollectionInput.CollectionId)
+func (*UtilsStruct) ModifyCollectionStatus(rpcParameters rpc.RPCParameters, config types.Configurations, modifyCollectionInput types.ModifyCollectionInput) (common.Hash, error) {
+	currentStatus, err := razorUtils.GetActiveStatus(rpcParameters, modifyCollectionInput.CollectionId)
 	if err != nil {
 		log.Error("Error in fetching active status")
 		return core.NilHash, err
@@ -98,13 +67,12 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 		log.Errorf("Collection %d has the active status already set to %t", modifyCollectionInput.CollectionId, modifyCollectionInput.Status)
 		return core.NilHash, nil
 	}
-	_, err = cmdUtils.WaitForAppropriateState(client, "modify collection status", 4)
+	_, err = cmdUtils.WaitForAppropriateState(rpcParameters, "modify collection status", 4)
 	if err != nil {
 		return core.NilHash, err
 	}
 
 	txnArgs := types.TransactionOptions{
-		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.CollectionManagerAddress,
@@ -114,8 +82,16 @@ func (*UtilsStruct) ModifyCollectionStatus(client *ethclient.Client, config type
 		Account:         modifyCollectionInput.Account,
 	}
 
-	txnOpts := razorUtils.GetTxnOpts(txnArgs)
+	txnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnArgs)
+	if err != nil {
+		return core.NilHash, err
+	}
 	log.Infof("Changing active status of collection: %d from %t to %t", modifyCollectionInput.CollectionId, !modifyCollectionInput.Status, modifyCollectionInput.Status)
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return core.NilHash, err
+	}
+
 	log.Debugf("Executing SetCollectionStatus transaction with status = %v, collectionId = %d", modifyCollectionInput.Status, modifyCollectionInput.CollectionId)
 	txn, err := assetManagerUtils.SetCollectionStatus(client, txnOpts, modifyCollectionInput.Status, modifyCollectionInput.CollectionId)
 	if err != nil {

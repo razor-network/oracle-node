@@ -16,7 +16,6 @@ import (
 )
 
 func TestGetCommitments(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 	var address string
 
@@ -74,11 +73,11 @@ func TestGetCommitments(t *testing.T) {
 			utils := StartRazor(optionsPackageStruct)
 
 			utilsMock.On("GetOptions").Return(callOpts)
-			utilsMock.On("GetStakerId", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string")).Return(tt.args.stakerId, tt.args.stakerIdErr)
+			utilsMock.On("GetStakerId", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.stakerId, tt.args.stakerIdErr)
 			voteManagerMock.On("GetCommitment", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.commitments, tt.args.commitmentErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetCommitment(client, address)
+			got, err := utils.GetCommitment(rpcParameters, address)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCommitment() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -91,7 +90,6 @@ func TestGetCommitments(t *testing.T) {
 }
 
 func TestGetEpochLastCommitted(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 	var stakerId uint32
 
@@ -139,7 +137,7 @@ func TestGetEpochLastCommitted(t *testing.T) {
 			voteManagerMock.On("GetEpochLastCommitted", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastCommitted, tt.args.epochLastCommittedErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetEpochLastCommitted(client, stakerId)
+			got, err := utils.GetEpochLastCommitted(rpcParameters, stakerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEpochLastCommitted() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -152,7 +150,6 @@ func TestGetEpochLastCommitted(t *testing.T) {
 }
 
 func TestGetEpochLastRevealed(t *testing.T) {
-	var client *ethclient.Client
 	var stakerId uint32
 
 	type args struct {
@@ -198,7 +195,7 @@ func TestGetEpochLastRevealed(t *testing.T) {
 			voteManagerMock.On("GetEpochLastRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32")).Return(tt.args.epochLastRevealed, tt.args.epochLastRevealedErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetEpochLastRevealed(client, stakerId)
+			got, err := utils.GetEpochLastRevealed(rpcParameters, stakerId)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetEpochLastRevealed() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -211,7 +208,6 @@ func TestGetEpochLastRevealed(t *testing.T) {
 }
 
 func TestGetInfluenceSnapshot(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 	var stakerId uint32
 	var epoch uint32
@@ -260,7 +256,7 @@ func TestGetInfluenceSnapshot(t *testing.T) {
 			voteManagerMock.On("GetInfluenceSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.influenceSnapshot, tt.args.influenceErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetInfluenceSnapshot(client, stakerId, epoch)
+			got, err := utils.GetInfluenceSnapshot(rpcParameters, stakerId, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetInfluenceSnapshot() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -273,7 +269,6 @@ func TestGetInfluenceSnapshot(t *testing.T) {
 }
 
 func TestGetStakeSnapshot(t *testing.T) {
-	var client *ethclient.Client
 	var callOpts bind.CallOpts
 	var stakerId uint32
 	var epoch uint32
@@ -322,7 +317,7 @@ func TestGetStakeSnapshot(t *testing.T) {
 			voteManagerMock.On("GetStakeSnapshot", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32")).Return(tt.args.stakeSnapshot, tt.args.snapshotErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetStakeSnapshot(client, stakerId, epoch)
+			got, err := utils.GetStakeSnapshot(rpcParameters, stakerId, epoch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetStakeSnapshot() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -336,7 +331,6 @@ func TestGetStakeSnapshot(t *testing.T) {
 
 func TestGetTotalInfluenceRevealed(t *testing.T) {
 	var (
-		client      *ethclient.Client
 		callOpts    bind.CallOpts
 		epoch       uint32
 		medianIndex uint16
@@ -386,7 +380,7 @@ func TestGetTotalInfluenceRevealed(t *testing.T) {
 			voteManagerMock.On("GetTotalInfluenceRevealed", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.totalInfluenceRevealed, tt.args.influenceErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetTotalInfluenceRevealed(client, epoch, medianIndex)
+			got, err := utils.GetTotalInfluenceRevealed(rpcParameters, epoch, medianIndex)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetTotalInfluenceRevealed() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -400,7 +394,6 @@ func TestGetTotalInfluenceRevealed(t *testing.T) {
 
 func TestGetVoteValue(t *testing.T) {
 	var (
-		client      *ethclient.Client
 		callOpts    bind.CallOpts
 		medianIndex uint16
 		stakerId    uint32
@@ -451,7 +444,7 @@ func TestGetVoteValue(t *testing.T) {
 			voteManagerMock.On("GetVoteValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint32"), mock.AnythingOfType("uint16")).Return(tt.args.voteValue, tt.args.voteValueErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.GetVoteValue(client, epoch, stakerId, medianIndex)
+			got, err := utils.GetVoteValue(rpcParameters, epoch, stakerId, medianIndex)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetVoteValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -488,7 +481,6 @@ func TestGetVoteManagerWithOpts(t *testing.T) {
 }
 
 func TestToAssign(t *testing.T) {
-	var client *ethclient.Client
 	type args struct {
 		toAssign    uint16
 		toAssignErr error
@@ -530,7 +522,7 @@ func TestToAssign(t *testing.T) {
 			voteManagerMock.On("ToAssign", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.toAssign, tt.args.toAssignErr)
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
-			got, err := utils.ToAssign(client)
+			got, err := utils.ToAssign(rpcParameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ToAssign() error = %v, wantErr %v", err, tt.wantErr)
 				return

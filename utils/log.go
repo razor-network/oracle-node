@@ -1,5 +1,7 @@
 package utils
 
-import "razor/logger"
+import (
+	"razor/logger"
+)
 
-var log = logger.NewLogger()
+var log = logger.GetLogger()

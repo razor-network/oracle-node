@@ -16,7 +16,6 @@ import (
 )
 
 func TestCreateCollection(t *testing.T) {
-	var client *ethclient.Client
 	var WaitForDisputeOrConfirmStateStatus uint32
 	var config types.Configurations
 	var collectionInput types.CreateCollectionInput
@@ -24,6 +23,7 @@ func TestCreateCollection(t *testing.T) {
 	type args struct {
 		jobIdUint8                 []uint16
 		waitForAppropriateStateErr error
+		txnOptsErr                 error
 		createCollectionTxn        *Types.Transaction
 		createCollectionErr        error
 		hash                       common.Hash
@@ -66,19 +66,28 @@ func TestCreateCollection(t *testing.T) {
 			want:    core.NilHash,
 			wantErr: errors.New("createCollection error"),
 		},
+		{
+			name: "Test 4: When there is an error in getting txnOpts",
+			args: args{
+				jobIdUint8: []uint16{1, 2},
+				txnOptsErr: errors.New("txnOpts error"),
+			},
+			want:    core.NilHash,
+			wantErr: errors.New("txnOpts error"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
 			utilsMock.On("ConvertUintArrayToUint16Array", mock.Anything).Return(tt.args.jobIdUint8)
-			utilsMock.On("GetTxnOpts", mock.AnythingOfType("types.TransactionOptions")).Return(TxnOpts)
-			cmdUtilsMock.On("WaitForAppropriateState", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("string"), mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
+			utilsMock.On("GetTxnOpts", mock.Anything, mock.Anything).Return(TxnOpts, tt.args.txnOptsErr)
+			cmdUtilsMock.On("WaitForAppropriateState", mock.Anything, mock.Anything, mock.Anything).Return(WaitForDisputeOrConfirmStateStatus, tt.args.waitForAppropriateStateErr)
 			assetManagerMock.On("CreateCollection", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(tt.args.createCollectionTxn, tt.args.createCollectionErr)
 			transactionMock.On("Hash", mock.Anything).Return(tt.args.hash)
 
 			utils := &UtilsStruct{}
-			got, err := utils.CreateCollection(client, config, collectionInput)
+			got, err := utils.CreateCollection(rpcParameters, config, collectionInput)
 			if got != tt.want {
 				t.Errorf("Txn hash for createCollection function, got = %v, want = %v", got, tt.want)
 			}
@@ -265,14 +274,16 @@ func TestExecuteCreateCollection(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(true)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("AssignPassword", flagSet).Return(tt.args.password)
@@ -285,8 +296,8 @@ func TestExecuteCreateCollection(t *testing.T) {
 			flagSetMock.On("GetInt8Power", flagSet).Return(tt.args.power, tt.args.powerErr)
 			flagSetMock.On("GetUint32Tolerance", flagSet).Return(tt.args.tolerance, tt.args.toleranceErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("CreateCollection", mock.AnythingOfType("*ethclient.Client"), config, mock.Anything).Return(tt.args.createCollectionHash, tt.args.createCollectionErr)
-			utilsMock.On("WaitForBlockCompletion", client, mock.AnythingOfType("string")).Return(nil)
+			cmdUtilsMock.On("CreateCollection", mock.Anything, config, mock.Anything).Return(tt.args.createCollectionHash, tt.args.createCollectionErr)
+			utilsMock.On("WaitForBlockCompletion", mock.Anything, mock.Anything).Return(nil)
 
 			utils := &UtilsStruct{}
 			fatal = false

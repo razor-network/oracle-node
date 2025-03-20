@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"errors"
-	Types "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -11,9 +10,10 @@ import (
 	"razor/core"
 	"razor/core/types"
 	"razor/logger"
+	"razor/rpc"
 	"time"
 
-	"github.com/avast/retry-go"
+	Types "github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -30,34 +30,24 @@ func (*UtilsStruct) ConnectToClient(provider string) *ethclient.Client {
 	return client
 }
 
-func (*UtilsStruct) FetchBalance(client *ethclient.Client, accountAddress string) (*big.Int, error) {
-	var (
-		balance *big.Int
-		err     error
-	)
-	err = retry.Do(
-		func() error {
-			address := common.HexToAddress(accountAddress)
-			erc20Contract := UtilsInterface.GetTokenManager(client)
-			opts := UtilsInterface.GetOptions()
-			balance, err = CoinInterface.BalanceOf(erc20Contract, &opts, address)
-			if err != nil {
-				log.Error("Error in fetching balance....Retrying")
-				return err
-			}
-			return nil
-		}, RetryInterface.RetryAttempts(core.MaxRetries))
+func (*UtilsStruct) FetchBalance(rpcParameters rpc.RPCParameters, accountAddress string) (*big.Int, error) {
+	address := common.HexToAddress(accountAddress)
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, CoinInterface, "BalanceOf", address)
 	if err != nil {
 		return big.NewInt(0), err
 	}
-	return balance, nil
+	return returnedValues[0].Interface().(*big.Int), nil
 }
 
-func (*UtilsStruct) GetBufferedState(client *ethclient.Client, header *Types.Header, buffer int32) (int64, error) {
-	stateBuffer, err := UtilsInterface.GetStateBuffer(client)
+func (*UtilsStruct) Allowance(rpcParameters rpc.RPCParameters, owner common.Address, spender common.Address) (*big.Int, error) {
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, CoinInterface, "Allowance", owner, spender)
 	if err != nil {
-		return -1, err
+		return big.NewInt(0), err
 	}
+	return returnedValues[0].Interface().(*big.Int), nil
+}
+
+func (*UtilsStruct) GetBufferedState(header *Types.Header, stateBuffer uint64, buffer int32) (int64, error) {
 	lowerLimit := (core.StateLength * uint64(buffer)) / 100
 	upperLimit := core.StateLength - (core.StateLength*uint64(buffer))/100
 	if header.Time%(core.StateLength) > upperLimit-stateBuffer || header.Time%(core.StateLength) < lowerLimit+stateBuffer {
@@ -67,29 +57,43 @@ func (*UtilsStruct) GetBufferedState(client *ethclient.Client, header *Types.Hea
 	return int64(state % core.NumberOfStates), nil
 }
 
-func (*UtilsStruct) CheckTransactionReceipt(client *ethclient.Client, _txHash string) int {
+func (*UtilsStruct) CheckTransactionReceipt(rpcParameters rpc.RPCParameters, _txHash string) int {
 	txHash := common.HexToHash(_txHash)
-	tx, err := ClientInterface.TransactionReceipt(client, context.Background(), txHash)
+	returnedValues, err := InvokeFunctionWithRetryAttempts(rpcParameters, ClientInterface, "TransactionReceipt", rpcParameters.Ctx, txHash)
 	if err != nil {
 		return -1
 	}
-	return int(tx.Status)
+
+	txnReceipt := returnedValues[0].Interface().(*Types.Receipt)
+	return int(txnReceipt.Status)
 }
 
-func (*UtilsStruct) WaitForBlockCompletion(client *ethclient.Client, hashToRead string) error {
+func (*UtilsStruct) WaitForBlockCompletion(rpcParameters rpc.RPCParameters, hashToRead string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), core.BlockCompletionTimeout*time.Second)
+	defer cancel()
+
 	for i := 0; i < core.BlockCompletionAttempts; i++ {
-		log.Debug("Checking if transaction is mined....")
-		transactionStatus := UtilsInterface.CheckTransactionReceipt(client, hashToRead)
-		if transactionStatus == 0 {
-			err := errors.New("transaction mining unsuccessful")
-			log.Error(err)
-			return err
-		} else if transactionStatus == 1 {
-			log.Info("Transaction mined successfully")
-			return nil
+		select {
+		case <-ctx.Done():
+			log.Error("Timeout: WaitForBlockCompletion took too long")
+			return errors.New("timeout exceeded for transaction mining")
+		default:
+			log.Debug("Checking if transaction is mined....")
+			transactionStatus := UtilsInterface.CheckTransactionReceipt(rpcParameters, hashToRead)
+
+			if transactionStatus == 0 {
+				err := errors.New("transaction mining unsuccessful")
+				log.Error(err)
+				return err
+			} else if transactionStatus == 1 {
+				log.Info("Transaction mined successfully")
+				return nil
+			}
+
+			time.Sleep(core.BlockCompletionAttemptRetryDelay * time.Second)
 		}
-		Time.Sleep(core.BlockCompletionAttemptRetryDelay * time.Second)
 	}
+
 	log.Info("Max retries for WaitForBlockCompletion attempted!")
 	return errors.New("maximum attempts failed for transaction mining")
 }
@@ -132,13 +136,13 @@ func (*UtilsStruct) IsFlagPassed(name string) bool {
 	return found
 }
 
-func (*UtilsStruct) CheckEthBalanceIsZero(client *ethclient.Client, address string) {
-	ethBalance, err := ClientInterface.BalanceAtWithRetry(client, common.HexToAddress(address))
+func (*UtilsStruct) CheckEthBalanceIsZero(rpcParameters rpc.RPCParameters, address string) {
+	ethBalance, err := ClientInterface.BalanceAtWithRetry(rpcParameters, common.HexToAddress(address))
 	if err != nil {
-		log.Fatalf("Error in fetching sFuel balance of the account: %s\n%s", address, err)
+		log.Fatalf("Error in fetching sFUEL balance of the account: %s\n%s", address, err)
 	}
 	if ethBalance.Cmp(big.NewInt(0)) == 0 {
-		log.Fatal("sFuel balance is 0, Aborting...")
+		log.Fatal("sFUEL balance is 0, Aborting...")
 	}
 }
 
@@ -161,15 +165,15 @@ func GetStateName(stateNumber int64) string {
 	return stateName
 }
 
-func (*UtilsStruct) AssignStakerId(flagSet *pflag.FlagSet, client *ethclient.Client, address string) (uint32, error) {
+func (*UtilsStruct) AssignStakerId(rpcParameters rpc.RPCParameters, flagSet *pflag.FlagSet, address string) (uint32, error) {
 	if UtilsInterface.IsFlagPassed("stakerId") {
 		return UtilsInterface.GetUint32(flagSet, "stakerId")
 	}
-	return UtilsInterface.GetStakerId(client, address)
+	return UtilsInterface.GetStakerId(rpcParameters, address)
 }
 
-func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
-	latestHeader, err := ClientInterface.GetLatestBlockWithRetry(client)
+func (*UtilsStruct) GetEpoch(rpcParameters rpc.RPCParameters) (uint32, error) {
+	latestHeader, err := ClientInterface.GetLatestBlockWithRetry(rpcParameters)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return 0, err
@@ -178,28 +182,20 @@ func (*UtilsStruct) GetEpoch(client *ethclient.Client) (uint32, error) {
 	return uint32(epoch), nil
 }
 
-func (*UtilsStruct) CalculateBlockTime(client *ethclient.Client) int64 {
-	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(client)
+func (*UtilsStruct) CalculateBlockTime(rpcParameters rpc.RPCParameters) int64 {
+	latestBlock, err := ClientInterface.GetLatestBlockWithRetry(rpcParameters)
 	if err != nil {
 		log.Fatalf("Error in fetching latest Block: %s", err)
 	}
 	latestBlockNumber := latestBlock.Number
-	lastSecondBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
+	lastSecondBlock, err := ClientInterface.GetBlockByNumberWithRetry(rpcParameters, big.NewInt(1).Sub(latestBlockNumber, big.NewInt(1)))
 	if err != nil {
 		log.Fatalf("Error in fetching last second Block: %s", err)
 	}
 	return int64(latestBlock.Time - lastSecondBlock.Time)
 }
 
-func (*UtilsStruct) GetRemainingTimeOfCurrentState(client *ethclient.Client, bufferPercent int32) (int64, error) {
-	block, err := ClientInterface.GetLatestBlockWithRetry(client)
-	if err != nil {
-		return 0, err
-	}
-	stateBuffer, err := UtilsInterface.GetStateBuffer(client)
-	if err != nil {
-		return 0, err
-	}
+func (*UtilsStruct) GetRemainingTimeOfCurrentState(block *Types.Header, stateBuffer uint64, bufferPercent int32) (int64, error) {
 	timeRemaining := core.StateLength - (block.Time % core.StateLength)
 	upperLimit := ((core.StateLength * uint64(bufferPercent)) / 100) + stateBuffer
 
@@ -219,8 +215,8 @@ func (*UtilsStruct) Prng(max uint32, prngHashes []byte) *big.Int {
 	return sum.Mod(sum, maxBigInt)
 }
 
-func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client, currentBlockNumber *big.Int) (*big.Int, error) {
-	block, err := ClientInterface.HeaderByNumber(client, context.Background(), currentBlockNumber)
+func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(rpcParameters rpc.RPCParameters, currentBlockNumber *big.Int) (*big.Int, error) {
+	block, err := ClientInterface.GetBlockByNumberWithRetry(rpcParameters, currentBlockNumber)
 	if err != nil {
 		log.Error("Error in fetching block: ", err)
 		return nil, err
@@ -228,7 +224,7 @@ func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client
 	currentEpoch := block.Time / core.EpochLength
 	previousBlockNumber := block.Number.Uint64() - core.StateLength
 
-	previousBlock, err := ClientInterface.HeaderByNumber(client, context.Background(), big.NewInt(int64(previousBlockNumber)))
+	previousBlock, err := ClientInterface.GetBlockByNumberWithRetry(rpcParameters, big.NewInt(int64(previousBlockNumber)))
 	if err != nil {
 		log.Error("Err in fetching Previous block: ", err)
 		return nil, err
@@ -237,20 +233,21 @@ func (*UtilsStruct) EstimateBlockNumberAtEpochBeginning(client *ethclient.Client
 	previousBlockAssumedTimestamp := block.Time - core.EpochLength
 	previousEpoch := previousBlockActualTimestamp / core.EpochLength
 	if previousBlockActualTimestamp > previousBlockAssumedTimestamp && previousEpoch != currentEpoch-1 {
-		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(client, big.NewInt(int64(previousBlockNumber)))
+		return UtilsInterface.EstimateBlockNumberAtEpochBeginning(rpcParameters, big.NewInt(int64(previousBlockNumber)))
 
 	}
 	return big.NewInt(int64(previousBlockNumber)), nil
 
 }
 
-func (*FileStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData) error {
+func (*FileStruct) SaveDataToCommitJsonFile(filePath string, epoch uint32, commitData types.CommitData, commitment [32]byte) error {
 
 	var data types.CommitFileData
 	data.Epoch = epoch
 	data.AssignedCollections = commitData.AssignedCollections
 	data.SeqAllottedCollections = commitData.SeqAllottedCollections
 	data.Leaves = commitData.Leaves
+	data.Commitment = commitment
 
 	jsonData, err := JsonInterface.Marshal(data)
 	if err != nil {

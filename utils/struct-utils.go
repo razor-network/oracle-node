@@ -9,12 +9,13 @@ import (
 	"io/fs"
 	"math/big"
 	"os"
-	"razor/client"
 	"razor/core"
 	coretypes "razor/core/types"
 	"razor/path"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/avast/retry-go"
@@ -110,40 +111,110 @@ func CheckIfAnyError(result []reflect.Value) error {
 	return nil
 }
 
-func InvokeFunctionWithRetryAttempts(interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
+func InvokeFunctionWithRetryAttempts(rpcParameters rpc.RPCParameters, interfaceName interface{}, methodName string, args ...interface{}) ([]reflect.Value, error) {
 	var returnedValues []reflect.Value
 	var err error
-	inputs := make([]reflect.Value, len(args))
-	for i := range args {
-		inputs[i] = reflect.ValueOf(args[i])
+	var contextError bool
+
+	// Ensure inputs has space for the client and any additional arguments
+	inputs := make([]reflect.Value, len(args)+1)
+
+	// Always use the current best client for each retry
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		log.Errorf("Failed to get current best client: %v", err)
+		return returnedValues, err
 	}
-	alternateProvider := client.GetAlternateProvider()
-	switchToAlternateClient := client.GetSwitchToAlternateClientStatus()
-	if switchToAlternateClient && alternateProvider != "" {
-		// Changing client argument to alternate client
-		log.Debug("Making this RPC call using alternate RPC provider!")
-		inputs = client.ReplaceClientWithAlternateClient(inputs)
+
+	// Set the client as the first argument
+	inputs[0] = reflect.ValueOf(client)
+	// Add the rest of the args to inputs starting from index 1
+	for i := 0; i < len(args); i++ {
+		inputs[i+1] = reflect.ValueOf(args[i])
 	}
+
 	err = retry.Do(
 		func() error {
-			returnedValues = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
-			err = CheckIfAnyError(returnedValues)
-			if err != nil {
-				log.Debug("Function to retry: ", methodName)
-				log.Errorf("Error in %v....Retrying", methodName)
-				return err
+			// Check if the context has been cancelled or timed out
+			select {
+			case <-rpcParameters.Ctx.Done():
+				// If context is done, return the context error timeout
+				log.Debugf("Context timed out for method: %s", methodName)
+				contextError = true
+				return retry.Unrecoverable(rpcParameters.Ctx.Err())
+			default:
+				// Proceed with the RPC call
+				returnedValues = reflect.ValueOf(interfaceName).MethodByName(methodName).Call(inputs)
+				err = CheckIfAnyError(returnedValues)
+				if err != nil {
+					log.Debug("Function to retry: ", methodName)
+					log.Errorf("Error in %v....Retrying", methodName)
+					return err
+				}
+				return nil
 			}
-			return nil
 		}, RetryInterface.RetryAttempts(core.MaxRetries), retry.Delay(time.Second*time.Duration(core.RetryDelayDuration)), retry.DelayType(retry.FixedDelay))
 	if err != nil {
-		if !switchToAlternateClient && alternateProvider != "" {
+		if contextError {
+			// If context error, we don't switch the client
+			log.Warnf("Skipping switching to the next best client due to context error: %v", err)
+			return returnedValues, err
+		}
+
+		// Only switch to the next best client if the error is identified as an RPC error
+		if isRPCError(err) {
 			log.Errorf("%v error after retries: %v", methodName, err)
-			log.Info("Switching RPC to alternate RPC")
-			client.SetSwitchToAlternateClientStatus(true)
-			go client.StartTimerForAlternateClient(core.SwitchClientDuration)
+			log.Info("Attempting to switch to a new best RPC endpoint...")
+
+			switched, switchErr := rpcParameters.RPCManager.SwitchToNextBestRPCClient()
+			if switchErr != nil {
+				log.Errorf("Failed to switch to the next best client: %v", switchErr)
+				return returnedValues, switchErr
+			}
+
+			if switched {
+				log.Infof("Successfully switched to a new RPC endpoint after RPC error.")
+			} else {
+				log.Warnf("No switch occurred. Retaining the current RPC client.")
+			}
 		}
 	}
+
 	return returnedValues, err
+}
+
+func isRPCError(err error) bool {
+	// Check for common RPC error patterns
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+		return true
+	}
+
+	// Add other checks based on specific RPC errors (timeouts, connection issues, etc.)
+	if strings.Contains(err.Error(), "connection refused") ||
+		strings.Contains(err.Error(), "connection reset by peer") ||
+		strings.Contains(err.Error(), "EOF") ||
+		strings.Contains(err.Error(), "dial") ||
+		strings.Contains(err.Error(), "no such host") ||
+		strings.Contains(err.Error(), "i/o timeout") {
+		return true
+	}
+
+	// Check for HTTP 500–504 errors
+	if strings.Contains(err.Error(), "500") ||
+		strings.Contains(err.Error(), "501") ||
+		strings.Contains(err.Error(), "502") ||
+		strings.Contains(err.Error(), "503") ||
+		strings.Contains(err.Error(), "504") {
+		return true
+	}
+
+	// Check for the custom RPC timeout error
+	if strings.Contains(err.Error(), "RPC timeout error") {
+		return true
+	}
+
+	// If it's not an RPC error, return false
+	return false
 }
 
 func (b BlockManagerStruct) GetBlockIndexToBeConfirmed(client *ethclient.Client) (int8, error) {
@@ -326,6 +397,37 @@ func (b BlockManagerStruct) GetEpochLastProposed(client *ethclient.Client, stake
 	return returnedValues[0].Interface().(uint32), nil
 }
 
+func (b BlockManagerStruct) GetConfirmedBlocks(client *ethclient.Client, epoch uint32) (coretypes.ConfirmedBlock, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "Blocks", &opts, epoch)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return coretypes.ConfirmedBlock{}, returnedError
+	}
+	return returnedValues[0].Interface().(struct {
+		Valid        bool
+		ProposerId   uint32
+		Iteration    *big.Int
+		BiggestStake *big.Int
+	}), nil
+}
+
+func (b BlockManagerStruct) Disputes(client *ethclient.Client, epoch uint32, address common.Address) (coretypes.DisputesStruct, error) {
+	blockManager, opts := UtilsInterface.GetBlockManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(blockManager, "Disputes", &opts, epoch, address)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return coretypes.DisputesStruct{}, returnedError
+	}
+	disputesMapping := returnedValues[0].Interface().(struct {
+		LeafId           uint16
+		LastVisitedValue *big.Int
+		AccWeight        *big.Int
+		Median           *big.Int
+	})
+	return disputesMapping, nil
+}
+
 func (s StakeManagerStruct) GetStakerId(client *ethclient.Client, address common.Address) (uint32, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	returnedValues := InvokeFunctionWithTimeout(stakeManager, "GetStakerId", &opts, address)
@@ -400,6 +502,55 @@ func (s StakeManagerStruct) GetStaker(client *ethclient.Client, stakerId uint32)
 	return returnedValues[0].Interface().(bindings.StructsStaker), nil
 }
 
+func (s StakeManagerStruct) StakerInfo(client *ethclient.Client, stakerId uint32) (coretypes.Staker, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "Stakers", &opts, stakerId)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return coretypes.Staker{}, returnedError
+	}
+	staker := returnedValues[0].Interface().(struct {
+		AcceptDelegation                bool
+		IsSlashed                       bool
+		Commission                      uint8
+		Id                              uint32
+		Age                             uint32
+		Address                         common.Address
+		TokenAddress                    common.Address
+		EpochFirstStakedOrLastPenalized uint32
+		EpochCommissionLastUpdated      uint32
+		Stake                           *big.Int
+		StakerReward                    *big.Int
+	})
+	return staker, nil
+}
+
+func (s StakeManagerStruct) GetMaturity(client *ethclient.Client, age uint32) (uint16, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	index := age / 10000
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "Maturities", opts, big.NewInt(int64(index)))
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return 0, returnedError
+	}
+	return returnedValues[0].Interface().(uint16), nil
+}
+
+func (s StakeManagerStruct) GetBountyLock(client *ethclient.Client, bountyId uint32) (coretypes.BountyLock, error) {
+	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "BountyLocks", &opts, bountyId)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return coretypes.BountyLock{}, returnedError
+	}
+	bountyLock := returnedValues[0].Interface().(struct {
+		RedeemAfter  uint32
+		BountyHunter common.Address
+		Amount       *big.Int
+	})
+	return bountyLock, nil
+}
+
 func (a AssetManagerStruct) GetNumCollections(client *ethclient.Client) (uint16, error) {
 	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
 	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetNumCollections", &opts)
@@ -428,6 +579,16 @@ func (a AssetManagerStruct) GetActiveCollections(client *ethclient.Client) ([]ui
 		return nil, returnedError
 	}
 	return returnedValues[0].Interface().([]uint16), nil
+}
+
+func (a AssetManagerStruct) GetActiveStatus(client *ethclient.Client, id uint16) (bool, error) {
+	collectionManager, opts := UtilsInterface.GetCollectionManagerWithOpts(client)
+	returnedValues := InvokeFunctionWithTimeout(collectionManager, "GetCollectionStatus", &opts, id)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return false, returnedError
+	}
+	return returnedValues[0].Interface().(bool), nil
 }
 
 func (a AssetManagerStruct) Jobs(client *ethclient.Client, id uint16) (bindings.StructsJob, error) {
@@ -661,8 +822,22 @@ func (c ClientStruct) FilterLogs(client *ethclient.Client, ctx context.Context, 
 	return returnedValues[0].Interface().([]types.Log), nil
 }
 
-func (c CoinStruct) BalanceOf(erc20Contract *bindings.RAZOR, opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	returnedValues := InvokeFunctionWithTimeout(erc20Contract, "BalanceOf", opts, account)
+func (c CoinStruct) BalanceOf(client *ethclient.Client, account common.Address) (*big.Int, error) {
+	tokenManager := UtilsInterface.GetTokenManager(client)
+	opts := UtilsInterface.GetOptions()
+	returnedValues := InvokeFunctionWithTimeout(tokenManager, "BalanceOf", &opts, account)
+	returnedError := CheckIfAnyError(returnedValues)
+	if returnedError != nil {
+		return nil, returnedError
+	}
+	return returnedValues[0].Interface().(*big.Int), nil
+}
+
+//This function is used to check the allowance of staker
+func (c CoinStruct) Allowance(client *ethclient.Client, owner common.Address, spender common.Address) (*big.Int, error) {
+	tokenManager := UtilsInterface.GetTokenManager(client)
+	opts := UtilsInterface.GetOptions()
+	returnedValues := InvokeFunctionWithTimeout(tokenManager, "Allowance", &opts, owner, spender)
 	returnedError := CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return nil, returnedError

@@ -11,7 +11,6 @@ import (
 )
 
 func TestGetJobList(t *testing.T) {
-	var client *ethclient.Client
 	type fields struct {
 		razorUtils Utils
 	}
@@ -31,7 +30,6 @@ func TestGetJobList(t *testing.T) {
 	}
 
 	type args struct {
-		client     *ethclient.Client
 		jobList    []bindings.StructsJob
 		jobListErr error
 	}
@@ -45,7 +43,6 @@ func TestGetJobList(t *testing.T) {
 			name:   "Test 1: When jobList executes properly",
 			fields: testUtils,
 			args: args{
-				client:     client,
 				jobList:    jobListArray,
 				jobListErr: nil,
 			},
@@ -56,7 +53,6 @@ func TestGetJobList(t *testing.T) {
 			name:   "Test 2: When there is a error fetching job list ",
 			fields: testUtils,
 			args: args{
-				client:     client,
 				jobListErr: errors.New("error in fetching job list"),
 			},
 			wantErr: errors.New("error in fetching job list"),
@@ -66,10 +62,10 @@ func TestGetJobList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetJobs", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.jobList, tt.args.jobListErr)
+			utilsMock.On("GetJobs", mock.Anything, mock.Anything).Return(tt.args.jobList, tt.args.jobListErr)
 			utils := &UtilsStruct{}
 
-			err := utils.GetJobList(tt.args.client)
+			err := utils.GetJobList(rpcParameters)
 
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
@@ -127,18 +123,20 @@ func TestExecuteJobList(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(false)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("GetJobList", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.jobListErr)
+			cmdUtilsMock.On("GetJobList", mock.Anything).Return(tt.args.jobListErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

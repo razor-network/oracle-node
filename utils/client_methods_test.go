@@ -12,13 +12,10 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {
-	var client *ethclient.Client
-
 	type args struct {
 		gasPrice    *big.Int
 		gasPriceErr error
@@ -62,7 +59,7 @@ func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.SuggestGasPriceWithRetry(client)
+			got, err := clientUtils.SuggestGasPriceWithRetry(rpcParameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SuggestGasPriceWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -75,7 +72,6 @@ func TestOptionUtilsStruct_SuggestGasPriceWithRetry(t *testing.T) {
 }
 
 func TestUtilsStruct_BalanceAtWithRetry(t *testing.T) {
-	var client *ethclient.Client
 	var account common.Address
 
 	type args struct {
@@ -120,7 +116,7 @@ func TestUtilsStruct_BalanceAtWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.BalanceAtWithRetry(client, account)
+			got, err := clientUtils.BalanceAtWithRetry(rpcParameters, account)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BalanceAtWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -133,7 +129,6 @@ func TestUtilsStruct_BalanceAtWithRetry(t *testing.T) {
 }
 
 func TestUtilsStruct_EstimateGasWithRetry(t *testing.T) {
-	var client *ethclient.Client
 	var message ethereum.CallMsg
 
 	type args struct {
@@ -178,7 +173,7 @@ func TestUtilsStruct_EstimateGasWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.EstimateGasWithRetry(client, message)
+			got, err := clientUtils.EstimateGasWithRetry(rpcParameters, message)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("EstimateGasWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -191,7 +186,6 @@ func TestUtilsStruct_EstimateGasWithRetry(t *testing.T) {
 }
 
 func TestUtilsStruct_FilterLogsWithRetry(t *testing.T) {
-	var client *ethclient.Client
 	var query ethereum.FilterQuery
 
 	type args struct {
@@ -235,7 +229,7 @@ func TestUtilsStruct_FilterLogsWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.FilterLogsWithRetry(client, query)
+			got, err := clientUtils.FilterLogsWithRetry(rpcParameters, query)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FilterLogsWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -248,8 +242,6 @@ func TestUtilsStruct_FilterLogsWithRetry(t *testing.T) {
 }
 
 func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
-	var client *ethclient.Client
-
 	type args struct {
 		latestHeader    *types.Header
 		latestHeaderErr error
@@ -291,7 +283,7 @@ func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.GetLatestBlockWithRetry(client)
+			got, err := clientUtils.GetLatestBlockWithRetry(rpcParameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLatestBlockWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -304,7 +296,6 @@ func TestUtilsStruct_GetLatestBlockWithRetry(t *testing.T) {
 }
 
 func TestUtilsStruct_GetNonceAtWithRetry(t *testing.T) {
-	var client *ethclient.Client
 	var accountAddress common.Address
 
 	type args struct {
@@ -348,13 +339,74 @@ func TestUtilsStruct_GetNonceAtWithRetry(t *testing.T) {
 			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
 
 			clientUtils := ClientStruct{}
-			got, err := clientUtils.GetNonceAtWithRetry(client, accountAddress)
+			got, err := clientUtils.GetNonceAtWithRetry(rpcParameters, accountAddress)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetNonceAtWithRetry() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
 				t.Errorf("GetNonceAtWithRetry() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClientStruct_GetBlockByNumberWithRetry(t *testing.T) {
+	var blockNumber *big.Int
+
+	type args struct {
+		header    *types.Header
+		headerErr error
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    *types.Header
+		wantErr bool
+	}{
+		{
+			name: "Test 1: When GetBlockByNumberWithRetry executes successfully",
+			args: args{
+				header: &types.Header{
+					Number: big.NewInt(123),
+				},
+			},
+			want: &types.Header{
+				Number: big.NewInt(123),
+			},
+			wantErr: false,
+		},
+		{
+			name: "Test 2: When there is an error in getting block header",
+			args: args{
+				headerErr: errors.New("header error"),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			retryMock := new(mocks.RetryUtils)
+			clientMock := new(mocks.ClientUtils)
+			optionsPackageStruct := OptionsPackageStruct{
+				RetryInterface:  retryMock,
+				ClientInterface: clientMock,
+			}
+
+			StartRazor(optionsPackageStruct)
+			clientMock.On("HeaderByNumber", mock.AnythingOfType("*ethclient.Client"), context.Background(), blockNumber).Return(tt.args.header, tt.args.headerErr)
+			retryMock.On("RetryAttempts", mock.AnythingOfType("uint")).Return(retry.Attempts(1))
+
+			clientUtils := ClientStruct{}
+			got, err := clientUtils.GetBlockByNumberWithRetry(rpcParameters, blockNumber)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetBlockByNumberWithRetry() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if (got == nil && tt.want != nil) || (got != nil && tt.want == nil) || (got != nil && got.Number.Cmp(tt.want.Number) != 0) {
+				t.Errorf("GetBlockByNumberWithRetry() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

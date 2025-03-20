@@ -2,7 +2,6 @@ package types
 
 type Configurations struct {
 	Provider           string
-	AlternateProvider  string
 	GasMultiplier      float32
 	BufferPercent      int32
 	WaitTime           int32

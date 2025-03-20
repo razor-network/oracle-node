@@ -4,6 +4,7 @@ package mocks
 
 import (
 	big "math/big"
+	RPC "razor/rpc"
 
 	abi "github.com/ethereum/go-ethereum/accounts/abi"
 
@@ -53,25 +54,25 @@ func (_m *ClientUtils) BalanceAt(client *ethclient.Client, ctx context.Context, 
 	return r0, r1
 }
 
-// BalanceAtWithRetry provides a mock function with given fields: client, account
-func (_m *ClientUtils) BalanceAtWithRetry(client *ethclient.Client, account common.Address) (*big.Int, error) {
-	ret := _m.Called(client, account)
+// BalanceAtWithRetry provides a mock function with given fields: rpcParameters, account
+func (_m *ClientUtils) BalanceAtWithRetry(rpcParameters RPC.RPCParameters, account common.Address) (*big.Int, error) {
+	ret := _m.Called(rpcParameters, account)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) (*big.Int, error)); ok {
-		return rf(client, account)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, common.Address) (*big.Int, error)); ok {
+		return rf(rpcParameters, account)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) *big.Int); ok {
-		r0 = rf(client, account)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, common.Address) *big.Int); ok {
+		r0 = rf(rpcParameters, account)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
-		r1 = rf(client, account)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, common.Address) error); ok {
+		r1 = rf(rpcParameters, account)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -79,25 +80,25 @@ func (_m *ClientUtils) BalanceAtWithRetry(client *ethclient.Client, account comm
 	return r0, r1
 }
 
-// BatchCall provides a mock function with given fields: client, contractABI, contractAddress, methodName, args
-func (_m *ClientUtils) BatchCall(client *ethclient.Client, contractABI *abi.ABI, contractAddress string, methodName string, args [][]interface{}) ([][]interface{}, error) {
-	ret := _m.Called(client, contractABI, contractAddress, methodName, args)
+// BatchCall provides a mock function with given fields: rpcParameters, contractABI, contractAddress, methodName, args
+func (_m *ClientUtils) BatchCall(rpcParameters RPC.RPCParameters, contractABI *abi.ABI, contractAddress string, methodName string, args [][]interface{}) ([][]interface{}, error) {
+	ret := _m.Called(rpcParameters, contractABI, contractAddress, methodName, args)
 
 	var r0 [][]interface{}
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *abi.ABI, string, string, [][]interface{}) ([][]interface{}, error)); ok {
-		return rf(client, contractABI, contractAddress, methodName, args)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *abi.ABI, string, string, [][]interface{}) ([][]interface{}, error)); ok {
+		return rf(rpcParameters, contractABI, contractAddress, methodName, args)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, *abi.ABI, string, string, [][]interface{}) [][]interface{}); ok {
-		r0 = rf(client, contractABI, contractAddress, methodName, args)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *abi.ABI, string, string, [][]interface{}) [][]interface{}); ok {
+		r0 = rf(rpcParameters, contractABI, contractAddress, methodName, args)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([][]interface{})
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, *abi.ABI, string, string, [][]interface{}) error); ok {
-		r1 = rf(client, contractABI, contractAddress, methodName, args)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, *abi.ABI, string, string, [][]interface{}) error); ok {
+		r1 = rf(rpcParameters, contractABI, contractAddress, methodName, args)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -155,23 +156,23 @@ func (_m *ClientUtils) EstimateGas(client *ethclient.Client, ctx context.Context
 	return r0, r1
 }
 
-// EstimateGasWithRetry provides a mock function with given fields: client, message
-func (_m *ClientUtils) EstimateGasWithRetry(client *ethclient.Client, message ethereum.CallMsg) (uint64, error) {
-	ret := _m.Called(client, message)
+// EstimateGasWithRetry provides a mock function with given fields: rpcParameters, message
+func (_m *ClientUtils) EstimateGasWithRetry(rpcParameters RPC.RPCParameters, message ethereum.CallMsg) (uint64, error) {
+	ret := _m.Called(rpcParameters, message)
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.CallMsg) (uint64, error)); ok {
-		return rf(client, message)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, ethereum.CallMsg) (uint64, error)); ok {
+		return rf(rpcParameters, message)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.CallMsg) uint64); ok {
-		r0 = rf(client, message)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, ethereum.CallMsg) uint64); ok {
+		r0 = rf(rpcParameters, message)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.CallMsg) error); ok {
-		r1 = rf(client, message)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, ethereum.CallMsg) error); ok {
+		r1 = rf(rpcParameters, message)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -205,25 +206,25 @@ func (_m *ClientUtils) FilterLogs(client *ethclient.Client, ctx context.Context,
 	return r0, r1
 }
 
-// FilterLogsWithRetry provides a mock function with given fields: client, query
-func (_m *ClientUtils) FilterLogsWithRetry(client *ethclient.Client, query ethereum.FilterQuery) ([]types.Log, error) {
-	ret := _m.Called(client, query)
+// FilterLogsWithRetry provides a mock function with given fields: rpcParameters, query
+func (_m *ClientUtils) FilterLogsWithRetry(rpcParameters RPC.RPCParameters, query ethereum.FilterQuery) ([]types.Log, error) {
+	ret := _m.Called(rpcParameters, query)
 
 	var r0 []types.Log
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.FilterQuery) ([]types.Log, error)); ok {
-		return rf(client, query)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, ethereum.FilterQuery) ([]types.Log, error)); ok {
+		return rf(rpcParameters, query)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, ethereum.FilterQuery) []types.Log); ok {
-		r0 = rf(client, query)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, ethereum.FilterQuery) []types.Log); ok {
+		r0 = rf(rpcParameters, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]types.Log)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, ethereum.FilterQuery) error); ok {
-		r1 = rf(client, query)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, ethereum.FilterQuery) error); ok {
+		r1 = rf(rpcParameters, query)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -231,25 +232,25 @@ func (_m *ClientUtils) FilterLogsWithRetry(client *ethclient.Client, query ether
 	return r0, r1
 }
 
-// GetLatestBlockWithRetry provides a mock function with given fields: client
-func (_m *ClientUtils) GetLatestBlockWithRetry(client *ethclient.Client) (*types.Header, error) {
-	ret := _m.Called(client)
+// GetBlockByNumberWithRetry provides a mock function with given fields: rpcParameters, blockNumber
+func (_m *ClientUtils) GetBlockByNumberWithRetry(rpcParameters RPC.RPCParameters, blockNumber *big.Int) (*types.Header, error) {
+	ret := _m.Called(rpcParameters, blockNumber)
 
 	var r0 *types.Header
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) (*types.Header, error)); ok {
-		return rf(client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *big.Int) (*types.Header, error)); ok {
+		return rf(rpcParameters, blockNumber)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) *types.Header); ok {
-		r0 = rf(client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, *big.Int) *types.Header); ok {
+		r0 = rf(rpcParameters, blockNumber)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*types.Header)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, *big.Int) error); ok {
+		r1 = rf(rpcParameters, blockNumber)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -257,23 +258,49 @@ func (_m *ClientUtils) GetLatestBlockWithRetry(client *ethclient.Client) (*types
 	return r0, r1
 }
 
-// GetNonceAtWithRetry provides a mock function with given fields: client, accountAddress
-func (_m *ClientUtils) GetNonceAtWithRetry(client *ethclient.Client, accountAddress common.Address) (uint64, error) {
-	ret := _m.Called(client, accountAddress)
+// GetLatestBlockWithRetry provides a mock function with given fields: rpcParameters
+func (_m *ClientUtils) GetLatestBlockWithRetry(rpcParameters RPC.RPCParameters) (*types.Header, error) {
+	ret := _m.Called(rpcParameters)
+
+	var r0 *types.Header
+	var r1 error
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (*types.Header, error)); ok {
+		return rf(rpcParameters)
+	}
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) *types.Header); ok {
+		r0 = rf(rpcParameters)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*types.Header)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetNonceAtWithRetry provides a mock function with given fields: rpcParameters, accountAddress
+func (_m *ClientUtils) GetNonceAtWithRetry(rpcParameters RPC.RPCParameters, accountAddress common.Address) (uint64, error) {
+	ret := _m.Called(rpcParameters, accountAddress)
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) (uint64, error)); ok {
-		return rf(client, accountAddress)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, common.Address) (uint64, error)); ok {
+		return rf(rpcParameters, accountAddress)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, common.Address) uint64); ok {
-		r0 = rf(client, accountAddress)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, common.Address) uint64); ok {
+		r0 = rf(rpcParameters, accountAddress)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client, common.Address) error); ok {
-		r1 = rf(client, accountAddress)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters, common.Address) error); ok {
+		r1 = rf(rpcParameters, accountAddress)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -331,13 +358,13 @@ func (_m *ClientUtils) NonceAt(client *ethclient.Client, ctx context.Context, ac
 	return r0, r1
 }
 
-// PerformBatchCall provides a mock function with given fields: client, calls
-func (_m *ClientUtils) PerformBatchCall(client *ethclient.Client, calls []rpc.BatchElem) error {
-	ret := _m.Called(client, calls)
+// PerformBatchCall provides a mock function with given fields: rpcParameters, calls
+func (_m *ClientUtils) PerformBatchCall(rpcParameters RPC.RPCParameters, calls []rpc.BatchElem) error {
+	ret := _m.Called(rpcParameters, calls)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client, []rpc.BatchElem) error); ok {
-		r0 = rf(client, calls)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters, []rpc.BatchElem) error); ok {
+		r0 = rf(rpcParameters, calls)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -371,25 +398,25 @@ func (_m *ClientUtils) SuggestGasPrice(client *ethclient.Client, ctx context.Con
 	return r0, r1
 }
 
-// SuggestGasPriceWithRetry provides a mock function with given fields: client
-func (_m *ClientUtils) SuggestGasPriceWithRetry(client *ethclient.Client) (*big.Int, error) {
-	ret := _m.Called(client)
+// SuggestGasPriceWithRetry provides a mock function with given fields: rpcParameters
+func (_m *ClientUtils) SuggestGasPriceWithRetry(rpcParameters RPC.RPCParameters) (*big.Int, error) {
+	ret := _m.Called(rpcParameters)
 
 	var r0 *big.Int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) (*big.Int, error)); ok {
-		return rf(client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) (*big.Int, error)); ok {
+		return rf(rpcParameters)
 	}
-	if rf, ok := ret.Get(0).(func(*ethclient.Client) *big.Int); ok {
-		r0 = rf(client)
+	if rf, ok := ret.Get(0).(func(RPC.RPCParameters) *big.Int); ok {
+		r0 = rf(rpcParameters)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(*ethclient.Client) error); ok {
-		r1 = rf(client)
+	if rf, ok := ret.Get(1).(func(RPC.RPCParameters) error); ok {
+		r1 = rf(rpcParameters)
 	} else {
 		r1 = ret.Error(1)
 	}

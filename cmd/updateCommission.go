@@ -3,14 +3,12 @@ package cmd
 
 import (
 	"errors"
-	"razor/accounts"
 	"razor/core"
 	"razor/core/types"
-	"razor/logger"
 	"razor/pkg/bindings"
+	"razor/rpc"
 	"razor/utils"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/pflag"
 
 	"github.com/spf13/cobra"
@@ -33,35 +31,13 @@ func initialiseUpdateCommission(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the UpdateCommission function
 func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
-	config, err := cmdUtils.GetConfigData()
-	utils.CheckError("Error in getting config: ", err)
-	log.Debugf("ExecuteUpdateCommission: Config: %+v", config)
-
-	client := razorUtils.ConnectToClient(config.Provider)
-
-	address, err := flagSetUtils.GetStringAddress(flagSet)
-	utils.CheckError("Error in getting address: ", err)
-
-	logger.SetLoggerParameters(client, address)
-
-	log.Debug("Checking to assign log file...")
-	fileUtils.AssignLogFile(flagSet, config)
-
-	log.Debug("Getting password...")
-	password := razorUtils.AssignPassword(flagSet)
-
-	accountManager, err := razorUtils.AccountManagerForKeystore()
-	utils.CheckError("Error in getting accounts manager for keystore: ", err)
-
-	account := accounts.InitAccountStruct(address, password, accountManager)
-
-	err = razorUtils.CheckPassword(account)
-	utils.CheckError("Error in fetching private key from given password: ", err)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
+	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	commission, err := flagSetUtils.GetUint8Commission(flagSet)
 	utils.CheckError("Error in getting commission", err)
 
-	stakerId, err := razorUtils.GetStakerId(client, address)
+	stakerId, err := razorUtils.GetStakerId(rpcParameters, account.Address)
 	utils.CheckError("Error in getting stakerId", err)
 
 	updateCommissionInput := types.UpdateCommissionInput{
@@ -70,20 +46,20 @@ func (*UtilsStruct) ExecuteUpdateCommission(flagSet *pflag.FlagSet) {
 		Account:    account,
 	}
 
-	err = cmdUtils.UpdateCommission(config, client, updateCommissionInput)
+	err = cmdUtils.UpdateCommission(rpcParameters, config, updateCommissionInput)
 	utils.CheckError("UpdateCommission error: ", err)
 }
 
 //This function allows a staker to add/update the commission value
-func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethclient.Client, updateCommissionInput types.UpdateCommissionInput) error {
-	stakerInfo, err := razorUtils.GetStaker(client, updateCommissionInput.StakerId)
+func (*UtilsStruct) UpdateCommission(rpcParameters rpc.RPCParameters, config types.Configurations, updateCommissionInput types.UpdateCommissionInput) error {
+	stakerInfo, err := razorUtils.GetStaker(rpcParameters, updateCommissionInput.StakerId)
 	if err != nil {
 		log.Error("Error in fetching staker info")
 		return err
 	}
 	log.Debugf("UpdateCommission: Staker Info: %+v", stakerInfo)
 
-	maxCommission, err := razorUtils.GetMaxCommission(client)
+	maxCommission, err := razorUtils.GetMaxCommission(rpcParameters)
 	if err != nil {
 		return err
 	}
@@ -93,13 +69,13 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		return errors.New("commission out of range")
 	}
 
-	epochLimitForUpdateCommission, err := razorUtils.GetEpochLimitForUpdateCommission(client)
+	epochLimitForUpdateCommission, err := razorUtils.GetEpochLimitForUpdateCommission(rpcParameters)
 	if err != nil {
 		return err
 	}
 	log.Debug("UpdateCommission: Epoch limit to update commission: ", epochLimitForUpdateCommission)
 
-	epoch, err := razorUtils.GetEpoch(client)
+	epoch, err := razorUtils.GetEpoch(rpcParameters)
 	if err != nil {
 		return err
 	}
@@ -117,7 +93,6 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		return errors.New("invalid epoch for update")
 	}
 	txnOpts := types.TransactionOptions{
-		Client:          client,
 		ChainId:         core.ChainId,
 		Config:          config,
 		ContractAddress: core.StakeManagerAddress,
@@ -126,8 +101,16 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 		Parameters:      []interface{}{updateCommissionInput.Commission},
 		Account:         updateCommissionInput.Account,
 	}
-	updateCommissionTxnOpts := razorUtils.GetTxnOpts(txnOpts)
+	updateCommissionTxnOpts, err := razorUtils.GetTxnOpts(rpcParameters, txnOpts)
+	if err != nil {
+		return err
+	}
 	log.Infof("Setting the commission value of Staker %d to %d%%", updateCommissionInput.StakerId, updateCommissionInput.Commission)
+	client, err := rpcParameters.RPCManager.GetBestRPCClient()
+	if err != nil {
+		return err
+	}
+
 	log.Debug("Executing UpdateCommission transaction with commission = ", updateCommissionInput.Commission)
 	txn, err := stakeManagerUtils.UpdateCommission(client, updateCommissionTxnOpts, updateCommissionInput.Commission)
 	if err != nil {
@@ -136,7 +119,7 @@ func (*UtilsStruct) UpdateCommission(config types.Configurations, client *ethcli
 	}
 	txnHash := transactionUtils.Hash(txn)
 	log.Infof("Txn Hash: %s", txnHash.Hex())
-	err = razorUtils.WaitForBlockCompletion(client, txnHash.Hex())
+	err = razorUtils.WaitForBlockCompletion(rpcParameters, txnHash.Hex())
 	if err != nil {
 		log.Error("Error in WaitForBlockCompletion for updateCommission: ", err)
 		return err

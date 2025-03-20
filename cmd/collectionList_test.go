@@ -11,7 +11,6 @@ import (
 )
 
 func TestGetCollectionList(t *testing.T) {
-	var client *ethclient.Client
 	type fields struct {
 		razorUtils Utils
 	}
@@ -37,7 +36,6 @@ func TestGetCollectionList(t *testing.T) {
 	}
 
 	type args struct {
-		client            *ethclient.Client
 		collectionList    []bindings.StructsCollection
 		collectionListErr error
 	}
@@ -51,7 +49,6 @@ func TestGetCollectionList(t *testing.T) {
 			name:   "Test 1: When collectionList executes properly",
 			fields: testUtils,
 			args: args{
-				client:            client,
 				collectionList:    collectionListArray,
 				collectionListErr: nil,
 			},
@@ -62,7 +59,6 @@ func TestGetCollectionList(t *testing.T) {
 			name:   "Test 2: When there is a error fetching collection list ",
 			fields: testUtils,
 			args: args{
-				client:            client,
 				collectionListErr: errors.New("error in fetching collection list"),
 			},
 			wantErr: errors.New("error in fetching collection list"),
@@ -72,10 +68,10 @@ func TestGetCollectionList(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
 
-			utilsMock.On("GetAllCollections", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionList, tt.args.collectionListErr)
+			utilsMock.On("GetAllCollections", mock.Anything).Return(tt.args.collectionList, tt.args.collectionListErr)
 			utils := &UtilsStruct{}
 
-			err := utils.GetCollectionList(tt.args.client)
+			err := utils.GetCollectionList(rpcParameters)
 
 			if err == nil || tt.wantErr == nil {
 				if err != tt.wantErr {
@@ -133,18 +129,20 @@ func TestExecuteCollectionList(t *testing.T) {
 			expectedFatal: true,
 		},
 	}
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetUpMockInterfaces()
+			setupTestEndpointsEnvironment()
 
+			utilsMock.On("IsFlagPassed", mock.Anything).Return(false)
 			fileUtilsMock.On("AssignLogFile", mock.AnythingOfType("*pflag.FlagSet"), mock.Anything)
 			cmdUtilsMock.On("GetConfigData").Return(tt.args.config, tt.args.configErr)
 			utilsMock.On("ConnectToClient", mock.AnythingOfType("string")).Return(client)
-			cmdUtilsMock.On("GetCollectionList", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.collectionListErr)
+			cmdUtilsMock.On("GetCollectionList", mock.Anything).Return(tt.args.collectionListErr)
 
 			utils := &UtilsStruct{}
 			fatal = false

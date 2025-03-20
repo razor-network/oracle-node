@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/rand"
 	"errors"
-	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"razor/accounts"
 	"razor/core/types"
@@ -14,16 +13,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	Types "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/mock"
 )
 
 func Test_getGasPrice(t *testing.T) {
-	var client *ethclient.Client
-
 	type args struct {
 		suggestedGasPrice    *big.Int
 		suggestedGasPriceErr error
@@ -103,16 +101,16 @@ func Test_getGasPrice(t *testing.T) {
 		},
 	}
 
-	defer func() { log.ExitFunc = nil }()
+	defer func() { log.LogrusInstance.ExitFunc = nil }()
 	var fatal bool
-	log.ExitFunc = func(int) { fatal = true }
+	log.LogrusInstance.ExitFunc = func(int) { fatal = true }
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			UtilsMock := new(mocks.Utils)
 			clientUtilsMock := new(mocks.ClientUtils)
 
-			clientUtilsMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.suggestedGasPrice, tt.args.suggestedGasPriceErr)
+			clientUtilsMock.On("SuggestGasPriceWithRetry", mock.Anything).Return(tt.args.suggestedGasPrice, tt.args.suggestedGasPriceErr)
 			UtilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(tt.args.multipliedGasPrice)
 
 			fatal = false
@@ -123,7 +121,7 @@ func Test_getGasPrice(t *testing.T) {
 			}
 			StartRazor(optionsPackageStruct)
 			gasUtils := GasStruct{}
-			got := gasUtils.GetGasPrice(client, tt.args.config)
+			got := gasUtils.GetGasPrice(rpcParameters, tt.args.config)
 			if fatal != tt.expectedFatal {
 				if got.Cmp(tt.want) != 0 {
 					t.Errorf("getGasPrice() = %v, want %v", got, tt.want)
@@ -151,10 +149,10 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 		latestHeaderErr error
 	}
 	tests := []struct {
-		name          string
-		args          args
-		want          *bind.TransactOpts
-		expectedFatal bool
+		name    string
+		args    args
+		want    *bind.TransactOpts
+		wantErr bool
 	}{
 		{
 			name: "Test 1: When GetTxnOptions execute successfully",
@@ -164,19 +162,17 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOpts:  txnOpts,
 				gasLimit: 1,
 			},
-			want:          txnOpts,
-			expectedFatal: false,
+			want:    txnOpts,
+			wantErr: false,
 		},
 		{
 			name: "Test 2: When there is an error in getting private key as address is not present in keystore",
 			args: args{
-				address:  "0x77Baf83BAD5bee0F7F44d84669A50C35c57E3576",
-				nonce:    2,
-				txnOpts:  txnOpts,
-				gasLimit: 1,
+				address: "0x77Baf83BAD5bee0F7F44d84669A50C35c57E3576",
+				nonce:   2,
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 3: When the accountManager is nil",
@@ -186,8 +182,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOpts:  txnOpts,
 				gasLimit: 1,
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 4: When there is an error in getting nonce",
@@ -198,8 +194,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOpts:  txnOpts,
 				gasLimit: 1,
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 5: When there is an error in getting transactor",
@@ -210,8 +206,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOptsErr: errors.New("transactor error"),
 				gasLimit:   1,
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Test 6: When there is an error in getting gasLimit",
@@ -221,8 +217,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				txnOpts:     txnOpts,
 				gasLimitErr: errors.New("gasLimit error"),
 			},
-			want:          txnOpts,
-			expectedFatal: false,
+			want:    txnOpts,
+			wantErr: false,
 		},
 		{
 			name: "Test 7: When there is an rpc error in getting gasLimit",
@@ -235,8 +231,8 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 					GasLimit: 500,
 				},
 			},
-			want:          txnOpts,
-			expectedFatal: false,
+			want:    txnOpts,
+			wantErr: false,
 		},
 		{
 			name: "Test 8: When there is an rpc error in getting gasLimit and than error in getting latest header",
@@ -250,21 +246,16 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 				},
 				latestHeaderErr: errors.New("latest header error"),
 			},
-			want:          txnOpts,
-			expectedFatal: true,
+			want:    nil,
+			wantErr: true,
 		},
 	}
 
-	originalExitFunc := log.ExitFunc                   // Preserve the original ExitFunc
-	defer func() { log.ExitFunc = originalExitFunc }() // Ensure it's reset after tests
+	originalExitFunc := log.LogrusInstance.ExitFunc                   // Preserve the original ExitFunc
+	defer func() { log.LogrusInstance.ExitFunc = originalExitFunc }() // Ensure it's reset after tests
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fatalOccurred := false
-
-			// Override log.ExitFunc to induce a panic for testing the fatal scenario
-			log.ExitFunc = func(int) { panic("log.Fatal called") }
-
 			var account types.Account
 			accountManager := accounts.NewAccountManager("test_accounts")
 			if tt.args.address != "" {
@@ -291,40 +282,20 @@ func Test_utils_GetTxnOpts(t *testing.T) {
 
 			utils := StartRazor(optionsPackageStruct)
 
-			clientMock.On("GetNonceAtWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("common.Address")).Return(tt.args.nonce, tt.args.nonceErr)
-			gasMock.On("GetGasPrice", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("types.Configurations")).Return(gasPrice)
+			clientMock.On("GetNonceAtWithRetry", mock.Anything, mock.Anything).Return(tt.args.nonce, tt.args.nonceErr)
+			gasMock.On("GetGasPrice", mock.Anything, mock.Anything).Return(gasPrice)
 			bindMock.On("NewKeyedTransactorWithChainID", mock.AnythingOfType("*ecdsa.PrivateKey"), mock.AnythingOfType("*big.Int")).Return(tt.args.txnOpts, tt.args.txnOptsErr)
-			gasMock.On("GetGasLimit", transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			clientMock.On("SuggestGasPriceWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(big.NewInt(1), nil)
+			gasMock.On("GetGasLimit", mock.Anything, transactionData, txnOpts).Return(tt.args.gasLimit, tt.args.gasLimitErr)
 			utilsMock.On("MultiplyFloatAndBigInt", mock.AnythingOfType("*big.Int"), mock.AnythingOfType("float64")).Return(big.NewInt(1))
-			clientMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
+			clientMock.On("GetLatestBlockWithRetry", mock.Anything).Return(tt.args.latestHeader, tt.args.latestHeaderErr)
 
-			// Defer a function to recover from the panic and check if it matches the expectedFatal condition
-			defer func() {
-				if r := recover(); r != nil {
-					// A panic occurred, check if it was expected
-					if tt.expectedFatal {
-						// Panic (fatal) was expected and occurred, so this is correct
-						fatalOccurred = true
-					} else {
-						// Panic occurred but was not expected, fail the test
-						t.Errorf("Unexpected log.Fatal call")
-					}
-				} else {
-					// No panic occurred, check if it was expected
-					if tt.expectedFatal {
-						// Expected a fatal condition but it didn't occur, fail the test
-						t.Errorf("Expected log.Fatal call did not occur")
-					}
-				}
-			}()
-
-			got := utils.GetTxnOpts(transactionData)
-			if !tt.expectedFatal && fatalOccurred {
-				t.Fatalf("Test exited due to an unexpected fatal condition")
+			got, err := utils.GetTxnOpts(rpcParameters, transactionData)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetTxnOpts() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-			if got != tt.want {
-				t.Errorf("GetTxnOpts() function, got = %v, want = %v", got, tt.want)
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetTxnOpts() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -480,12 +451,12 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 
 			abiMock.On("Parse", reader).Return(tt.args.parsedData, tt.args.parseErr)
 			abiMock.On("Pack", parsedData, mock.AnythingOfType("string"), mock.Anything).Return(tt.args.inputData, tt.args.packErr)
-			clientUtilsMock.On("EstimateGasWithRetry", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("ethereum.CallMsg")).Return(tt.args.gasLimit, tt.args.gasLimitErr)
-			gasUtilsMock.On("IncreaseGasLimitValue", mock.AnythingOfType("*ethclient.Client"), mock.AnythingOfType("uint64"), mock.AnythingOfType("float32")).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
+			clientUtilsMock.On("EstimateGasWithRetry", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.gasLimit, tt.args.gasLimitErr)
+			gasUtilsMock.On("IncreaseGasLimitValue", mock.Anything, mock.Anything, mock.Anything).Return(tt.args.increaseGasLimit, tt.args.increaseGasLimitErr)
 			utilsMock.On("ToAssign", mock.Anything).Return(tt.args.toAssign, tt.args.toAssignErr)
 
 			gasUtils := GasStruct{}
-			got, err := gasUtils.GetGasLimit(tt.args.transactionData, txnOpts)
+			got, err := gasUtils.GetGasLimit(rpcParameters, tt.args.transactionData, txnOpts)
 			if got != tt.want {
 				t.Errorf("getGasLimit() got = %v, want %v", got, tt.want)
 			}
@@ -503,8 +474,6 @@ func TestUtilsStruct_GetGasLimit(t *testing.T) {
 }
 
 func TestUtilsStruct_IncreaseGasLimitValue(t *testing.T) {
-	var client *ethclient.Client
-
 	type args struct {
 		gasLimit           uint64
 		gasLimitMultiplier float32
@@ -580,10 +549,10 @@ func TestUtilsStruct_IncreaseGasLimitValue(t *testing.T) {
 
 			StartRazor(optionsPackageStruct)
 
-			clientUtilsMock.On("GetLatestBlockWithRetry", mock.AnythingOfType("*ethclient.Client")).Return(tt.args.latestBlock, tt.args.blockErr)
+			clientUtilsMock.On("GetLatestBlockWithRetry", mock.Anything, mock.Anything).Return(tt.args.latestBlock, tt.args.blockErr)
 
 			gasUtils := GasStruct{}
-			got, err := gasUtils.IncreaseGasLimitValue(client, tt.args.gasLimit, tt.args.gasLimitMultiplier)
+			got, err := gasUtils.IncreaseGasLimitValue(rpcParameters, tt.args.gasLimit, tt.args.gasLimitMultiplier)
 			if got != tt.want {
 				t.Errorf("increaseGasLimitValue() got = %v, want %v", got, tt.want)
 			}
