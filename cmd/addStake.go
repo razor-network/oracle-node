@@ -32,7 +32,7 @@ func initialiseStake(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the StakeCoins function
 func (*UtilsStruct) ExecuteStake(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	balance, err := razorUtils.FetchBalance(rpcParameters, account.Address)

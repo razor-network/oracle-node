@@ -32,7 +32,7 @@ func initialiseSetDelegation(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the SetDelegation function
 func (*UtilsStruct) ExecuteSetDelegation(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	statusString, err := flagSetUtils.GetStringStatus(flagSet)

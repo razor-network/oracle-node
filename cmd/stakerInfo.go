@@ -28,7 +28,7 @@ func initialiseStakerInfo(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the GetStakerInfo function
 func (*UtilsStruct) ExecuteStakerinfo(flagSet *pflag.FlagSet) {
-	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	_, rpcParameters, _, _, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	stakerId, err := flagSetUtils.GetUint32StakerId(flagSet)
