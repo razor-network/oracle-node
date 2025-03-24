@@ -35,7 +35,7 @@ func initialiseUnstake(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the Unstake function
 func (*UtilsStruct) ExecuteUnstake(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("Getting amount in wei...")

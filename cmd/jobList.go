@@ -29,7 +29,7 @@ func initialiseJobList(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the GetJobList function
 func (*UtilsStruct) ExecuteJobList(flagSet *pflag.FlagSet) {
-	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	_, rpcParameters, _, _, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("ExecuteJobList: Calling JobList()...")

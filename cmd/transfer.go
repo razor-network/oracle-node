@@ -32,7 +32,7 @@ func initialiseTransfer(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the Transfer function
 func (*UtilsStruct) ExecuteTransfer(flagSet *pflag.FlagSet) {
-	config, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, _, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debugf("ExecuteTransfer: Config: %+v", config)

@@ -26,7 +26,7 @@ Example:
 
 //This function allows the staker to claim the rewards earned from delegator's pool share as commission
 func (*UtilsStruct) ClaimCommission(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	stakerId, err := razorUtils.GetStakerId(rpcParameters, account.Address)

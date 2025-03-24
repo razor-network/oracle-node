@@ -64,6 +64,26 @@ func (bm *BlockMonitor) updateLatestBlock() {
 	bm.mu.Lock()
 	defer bm.mu.Unlock()
 
+	// Check if the fetched block number is less than the last recorded block number.
+	if bm.latestBlock != nil && header.Number.Uint64() < bm.latestBlock.Number.Uint64() {
+		logrus.Warnf("Fetched block number %d is less than the last recorded block number %d. Switching to the next best RPC endpoint.",
+			header.Number.Uint64(), bm.latestBlock.Number.Uint64())
+
+		// Attempt to switch to the next best RPC endpoint.
+		if bm.rpcManager != nil {
+			switched, err := bm.rpcManager.SwitchToNextBestRPCClient()
+			if err != nil {
+				logrus.Errorf("Failed to switch RPC endpoint: %v", err)
+			} else if switched {
+				logrus.Info("Switched to the next best RPC endpoint.")
+				bm.updateClient()
+			} else {
+				logrus.Warn("Retaining the current best RPC endpoint as no valid alternate was found.")
+			}
+		}
+		return
+	}
+
 	// Update the latest block only if it changes.
 	if bm.latestBlock == nil || header.Number.Uint64() != bm.latestBlock.Number.Uint64() {
 		bm.latestBlock = header

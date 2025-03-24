@@ -31,7 +31,7 @@ func initialiseCollectionList(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and and executes the GetCollectionList function
 func (*UtilsStruct) ExecuteCollectionList(flagSet *pflag.FlagSet) {
-	_, rpcParameters, _, err := InitializeCommandDependencies(flagSet)
+	_, rpcParameters, _, _, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	log.Debug("Calling GetCollectionList()")

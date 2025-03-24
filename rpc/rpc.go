@@ -201,10 +201,10 @@ func (m *RPCManager) SwitchToNextBestRPCClient() (bool, error) {
 
 		// Check if we can connect to the next endpoint
 		ctx, cancel := context.WithTimeout(context.Background(), core.EndpointsContextTimeout*time.Second)
-		cancel()
 
 		client, err := ethclient.DialContext(ctx, nextEndpoint.URL)
 		if err != nil {
+			cancel()
 			logrus.Errorf("Failed to connect to RPC endpoint %s: %v", nextEndpoint.URL, err)
 			continue
 		}
@@ -212,12 +212,17 @@ func (m *RPCManager) SwitchToNextBestRPCClient() (bool, error) {
 		// Try fetching block number to validate the endpoint
 		_, err = m.fetchBlockNumberWithTimeout(ctx, client)
 		if err != nil {
+			cancel()
 			logrus.Errorf("Failed to fetch block number for endpoint %s: %v", nextEndpoint.URL, err)
 			continue
 		}
 
+		// Cancel the context after the operations complete.
+		cancel()
+
 		// Successfully connected and validated, update the best client and endpoint
-		m.BestEndpoint.Client = client
+		// (Make sure that the client is correctly associated with the endpoint.)
+		nextEndpoint.Client = client
 		m.BestEndpoint = nextEndpoint
 
 		logrus.Infof("Switched to the next best RPC endpoint: %s (BlockNumber: %d, Latency: %.2f)",

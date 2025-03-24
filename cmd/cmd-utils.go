@@ -130,7 +130,7 @@ func GetFormattedStateNames(states []int) string {
 	return statesAllowed
 }
 
-func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations, rpc.RPCParameters, types.Account, error) {
+func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations, rpc.RPCParameters, *block.BlockMonitor, types.Account, error) {
 	var (
 		account       types.Account
 		client        *ethclient.Client
@@ -141,7 +141,7 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 	config, err := cmdUtils.GetConfigData()
 	if err != nil {
 		log.Error("Error in getting config: ", err)
-		return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, rpc.RPCParameters{}, nil, types.Account{}, err
 	}
 	log.Debugf("Config: %+v", config)
 
@@ -149,7 +149,7 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 		address, err := flagSetUtils.GetStringAddress(flagSet)
 		if err != nil {
 			log.Error("Error in getting address: ", err)
-			return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+			return types.Configurations{}, rpc.RPCParameters{}, nil, types.Account{}, err
 		}
 		log.Debugf("Address: %v", address)
 
@@ -159,21 +159,21 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 		accountManager, err := razorUtils.AccountManagerForKeystore()
 		if err != nil {
 			log.Error("Error in getting accounts manager for keystore: ", err)
-			return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+			return types.Configurations{}, rpc.RPCParameters{}, nil, types.Account{}, err
 		}
 
 		account = accounts.InitAccountStruct(address, password, accountManager)
 		err = razorUtils.CheckPassword(account)
 		if err != nil {
 			log.Error("Error in fetching private key from given password: ", err)
-			return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+			return types.Configurations{}, rpc.RPCParameters{}, nil, types.Account{}, err
 		}
 	}
 
 	rpcManager, err := rpc.InitializeRPCManager(config.Provider)
 	if err != nil {
 		log.Error("Error in initializing RPC Manager: ", err)
-		return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, rpc.RPCParameters{}, nil, types.Account{}, err
 	}
 
 	rpcParameters = rpc.RPCParameters{
@@ -184,7 +184,7 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 	client, err = rpcManager.GetBestRPCClient()
 	if err != nil {
 		log.Error("Error in getting best RPC client: ", err)
-		return types.Configurations{}, rpc.RPCParameters{}, types.Account{}, err
+		return types.Configurations{}, rpc.RPCParameters{}, nil, types.Account{}, err
 	}
 
 	// Initialize BlockMonitor with RPCManager
@@ -196,5 +196,5 @@ func InitializeCommandDependencies(flagSet *pflag.FlagSet) (types.Configurations
 	// Update Logger Instance
 	logger.UpdateLogger(account.Address, client, blockMonitor)
 
-	return config, rpcParameters, account, nil
+	return config, rpcParameters, blockMonitor, account, nil
 }

@@ -31,7 +31,7 @@ Example:
 
 //This function sets the flags appropriately and executes the InitiateWithdraw function
 func (*UtilsStruct) ExecuteInitiateWithdraw(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	stakerId, err := razorUtils.AssignStakerId(rpcParameters, flagSet, account.Address)

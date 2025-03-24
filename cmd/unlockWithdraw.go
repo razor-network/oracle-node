@@ -31,7 +31,7 @@ func initializeUnlockWithdraw(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriately and executes the UnlockWithdraw function
 func (*UtilsStruct) ExecuteUnlockWithdraw(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	stakerId, err := razorUtils.AssignStakerId(rpcParameters, flagSet, account.Address)

@@ -29,8 +29,8 @@ Example:
 
 // This function returns the error if there is any and sets the config
 func (*UtilsStruct) SetConfig(flagSet *pflag.FlagSet) error {
-	_, _, _, err := InitializeCommandDependencies(flagSet)
-	utils.CheckError("Error in initialising command dependencies: ", err)
+	log.Debug("Checking to assign log file...")
+	fileUtils.AssignLogFile(flagSet, types.Configurations{})
 
 	flagDetails := []types.FlagDetail{
 		{Name: "provider", Type: "string"},

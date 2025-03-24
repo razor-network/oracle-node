@@ -25,7 +25,7 @@ func initialiseContractAddresses(cmd *cobra.Command, args []string) {
 
 //This function sets the flag appropriatley and executes the ContractAddresses function
 func (*UtilsStruct) ExecuteContractAddresses(flagSet *pflag.FlagSet) {
-	_, _, _, err := InitializeCommandDependencies(flagSet)
+	_, _, _, _, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	fmt.Println("The contract addresses are: ")

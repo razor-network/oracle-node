@@ -497,6 +497,21 @@ func TestPropose(t *testing.T) {
 			},
 			wantErr: errors.New("txnOpts error"),
 		},
+		{
+			name: "Test 20: When there is a mismatch in number of proposed blocks and length of sorted proposed blocks array",
+			args: args{
+				state:                  2,
+				staker:                 bindings.StructsStaker{},
+				numStakers:             5,
+				biggestStake:           big.NewInt(1).Mul(big.NewInt(5356), big.NewInt(1e18)),
+				biggestStakerId:        2,
+				salt:                   saltBytes32,
+				iteration:              1,
+				numOfProposedBlocks:    3,
+				sortedProposedBlockIds: []uint32{2, 1},
+			},
+			wantErr: errors.New("proposed blocks count mismatch"),
+		},
 	}
 	for _, tt := range tests {
 		SetUpMockInterfaces()

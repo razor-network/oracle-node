@@ -29,7 +29,7 @@ func initialiseModifyCollectionStatus(cmd *cobra.Command, args []string) {
 
 //This function sets the flags appropriately and executes the ModifyCollectionStatus function
 func (*UtilsStruct) ExecuteModifyCollectionStatus(flagSet *pflag.FlagSet) {
-	config, rpcParameters, account, err := InitializeCommandDependencies(flagSet)
+	config, rpcParameters, _, account, err := InitializeCommandDependencies(flagSet)
 	utils.CheckError("Error in initialising command dependencies: ", err)
 
 	collectionId, err := flagSetUtils.GetUint16CollectionId(flagSet)

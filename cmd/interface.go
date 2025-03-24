@@ -4,6 +4,7 @@ package cmd
 import (
 	"crypto/ecdsa"
 	"math/big"
+	"razor/block"
 	"razor/cache"
 	"razor/core/types"
 	"razor/path"
@@ -225,7 +226,7 @@ type UtilsCmdInterface interface {
 	CalculateSecret(account types.Account, epoch uint32, keystorePath string, chainId *big.Int) ([]byte, []byte, error)
 	HandleBlock(rpcParameters rpc.RPCParameters, account types.Account, stakerId uint32, header *Types.Header, config types.Configurations, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string)
 	ExecuteVote(flagSet *pflag.FlagSet)
-	Vote(rpcParameters rpc.RPCParameters, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
+	Vote(rpcParameters rpc.RPCParameters, blockMonitor *block.BlockMonitor, config types.Configurations, account types.Account, stakerId uint32, commitParams *types.CommitParams, rogueData types.Rogue, backupNodeActionsToIgnore []string) error
 	HandleExit()
 	ExecuteListAccounts(flagSet *pflag.FlagSet)
 	ClaimCommission(flagSet *pflag.FlagSet)
