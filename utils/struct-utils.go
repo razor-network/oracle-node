@@ -528,7 +528,7 @@ func (s StakeManagerStruct) StakerInfo(client *ethclient.Client, stakerId uint32
 func (s StakeManagerStruct) GetMaturity(client *ethclient.Client, age uint32) (uint16, error) {
 	stakeManager, opts := UtilsInterface.GetStakeManagerWithOpts(client)
 	index := age / 10000
-	returnedValues := InvokeFunctionWithTimeout(stakeManager, "Maturities", opts, big.NewInt(int64(index)))
+	returnedValues := InvokeFunctionWithTimeout(stakeManager, "Maturities", &opts, big.NewInt(int64(index)))
 	returnedError := CheckIfAnyError(returnedValues)
 	if returnedError != nil {
 		return 0, returnedError
