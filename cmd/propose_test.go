@@ -738,6 +738,16 @@ func TestGetIteration(t *testing.T) {
 			},
 			want: -1,
 		},
+		{
+			name: "Test 7: When the staker is elected at several iterations, getIteration returns the lowest",
+			args: args{
+				stakeSnapshot: big.NewInt(10000000),
+				stateBuffer:   5,
+				latestHeader:  &Types.Header{},
+				remainingTime: 10,
+			},
+			want: 12,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

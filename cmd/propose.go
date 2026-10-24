@@ -13,7 +13,6 @@ import (
 	"razor/utils"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	Types "github.com/ethereum/go-ethereum/core/types"
@@ -263,67 +262,31 @@ func (*UtilsStruct) GetIteration(rpcParameters rpc.RPCParameters, proposer types
 	log.Debug("GetIteration: State remaining time: ", stateRemainingTime)
 
 	stateTimeout := time.NewTimer(time.Second * time.Duration(stateRemainingTime))
-	wg := &sync.WaitGroup{}
-	wg.Add(core.NumRoutines)
-	done := make(chan bool, 10)
-	iterationResult := make(chan int, 10)
-	quit := make(chan bool, 10)
+	defer stateTimeout.Stop()
 
+	// Sequential search from 0, so the result is the lowest iteration at which
+	// the staker is elected. The upstream version raced 10 goroutines and kept
+	// the first hit, which is often not the lowest; the block with the lowest
+	// iteration wins the epoch. The contract accepts any elected iteration
+	// (BlockManager.propose -> _isElectedProposer), so this only picks the best
+	// valid one. A hit is usually within the first few hundred iterations.
 	log.Debug("Calculating Iteration...")
-	for routine := 0; routine < core.NumRoutines; routine++ {
-		go getIterationConcurrently(proposer, currentStakerStake, routine, wg, done, iterationResult, quit, stateTimeout)
-	}
-
-	log.Debug("Waiting for all the goroutines to finish")
-	wg.Wait()
-	log.Debug("Done")
-
-	close(done)
-	close(quit)
-	close(iterationResult)
-
-	var iterations []int
-
-	for iteration := range iterationResult {
-		iterations = append(iterations, iteration)
-	}
-
-	sort.Ints(iterations)
-	return iterations[0]
-}
-
-func getIterationConcurrently(proposer types.ElectedProposer, currentStake *big.Int, routine int, wg *sync.WaitGroup, done chan bool, iterationResult chan int, quit chan bool, stateTimeout *time.Timer) {
-	//PARALLEL IMPLEMENTATION WITH BATCHES
-
-	defer wg.Done()
-	batchSize := core.BatchSize                  //1000
-	NumBatches := core.MaxIterations / batchSize //10000000/1000 = 10000
-	// Batch 0th - [0,1000)
-	// Batch 1th - [1000,2000)
-	for batch := 0; batch < NumBatches; batch++ {
-		for iteration := (batch * batchSize) + routine; iteration < (batch*batchSize)+batchSize; iteration = iteration + core.NumRoutines {
+	for iteration := 0; iteration < core.MaxIterations; iteration++ {
+		if iteration%core.BatchSize == 0 {
 			select {
 			case <-stateTimeout.C:
-				log.Error("getIterationConcurrently: State timeout!")
-				iterationResult <- -1
-				quit <- true
-				return
+				log.Error("GetIteration: State timeout!")
+				return -1
 			default:
-				proposer.Iteration = iteration
-				if len(done) >= 1 || len(quit) >= 1 {
-					return
-				}
-				isElected := cmdUtils.IsElectedProposer(proposer, currentStake)
-				if isElected {
-					iterationResult <- iteration
-					done <- true
-					return
-				}
 			}
 		}
+		proposer.Iteration = iteration
+		if cmdUtils.IsElectedProposer(proposer, currentStakerStake) {
+			return iteration
+		}
 	}
-	iterationResult <- -1
-	log.Debug("IsElected is never true for this batch")
+	log.Debug("IsElected is never true")
+	return -1
 }
 
 //This function returns if the elected staker is proposer or not
